@@ -1,0 +1,33 @@
+# Analysis of 18th to 21st Election Data
+
+## Introduction
+
+This report presents an analysis of election data from the 18th to the 21st elections, based on the provided `K18to21charts.xlsx` file. The objective is to identify and report on significant trends and patterns observed in voter turnout, major party vote shares, and regional party strengths across these election cycles.
+
+## Overall Election Trends
+
+### Voter Turnout
+
+The voter turnout rate, calculated as the percentage of total votes cast relative to the total number of eligible voters, shows a fluctuating but generally increasing trend across the 18th to 21st elections. This indicates a growing engagement or perceived importance of the elections among the electorate.
+
+![Voter Turnout Rate](https://private-us-east-1.manuscdn.com/sessionFile/hl8mBheWX1LikkMB6iowuy/sandbox/7eErNjqdegWLlaY5A0s9RZ-images_1776180341651_na1fn_L2hvbWUvdWJ1bnR1L3ZvdGVyX3R1cm5vdXQ.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvaGw4bUJoZVdYMUxpa2tNQjZpb3d1eS9zYW5kYm94LzdlRXJOanFkZWdXTGxhWTVBMHM5UlotaW1hZ2VzXzE3NzYxODAzNDE2NTFfbmExZm5fTDJodmJXVXZkV0oxYm5SMUwzWnZkR1Z5WDNSMWNtNXZkWFEucG5nIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=j4A-VKTkyBvVJpfi0LCasTdgABlU1RfL9N8Bn0O2~kzFypSH9L50VdWooYt3CTQRPOh0bj167eK1jeN7~BSKjHs~gaCKwPb7El9FQNBgQastNy-lLJuv9zQhoocWRWtZqm7n3~c51TmxYuzHvn85FoBqbIHqqoLQvi93OnejGWQ95i3V1IAzpD3zQA6cOSYtRb7P5HX9JhA8FQA7Z2DctXWZflESkDx85isSnvUHbOkZ21Um07aJKeh2QyhbIV66NHCnKTldi0RW7GnOGrqeY4zkpo-MyJEG8P1GD9nrhGD3GyYxIRKhPp~xuVotj3GHsfK5E80DsjCCg3xHM1~A~w__)
+
+### Major Party Vote Share
+
+An examination of the vote shares for the major conservative and democratic parties reveals shifts in political landscape over the four election cycles. The data highlights the competitive nature of these elections and the varying degrees of support for each political ideology.
+
+![Major Party Vote Share](https://private-us-east-1.manuscdn.com/sessionFile/hl8mBheWX1LikkMB6iowuy/sandbox/7eErNjqdegWLlaY5A0s9RZ-images_1776180341651_na1fn_L2hvbWUvdWJ1bnR1L21ham9yX3BhcnR5X3ZvdGVfc2hhcmU.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvaGw4bUJoZVdYMUxpa2tNQjZpb3d1eS9zYW5kYm94LzdlRXJOanFkZWdXTGxhWTVBMHM5UlotaW1hZ2VzXzE3NzYxODAzNDE2NTFfbmExZm5fTDJodmJXVXZkV0oxYm5SMUwyMWhhbTl5WDNCaGNuUjVYM1p2ZEdWZmMyaGhjbVUucG5nIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=Y4bpu~RFC2wdSBb6mgTAGSCX8~my5GxQQZlGqSsUzVQWUWVcB06sV20SOiHkt4BCXYhpAOIemWGe6dCNy3obXDKhmMg6qtiSU~r6PrgrQN9YKS1CMC35hiNvzndVmA1XdFHCjANdbQh6whxJvk~zgKiH9H3D8rMOZnzS~vlTD3Og0CEkZFpiUa2RzsIHVd7YQfqPChrhsnSOKCrGj1q0Bzjalt2uiYwZNRxdOZhqQvAnTflwj6~0WHKDZqkWeUkDh2wjmbO5YT3z462EmKLxrJ63iBT~PAYORh1teccykYiLOUTpvykTPJCiXI5cyO4c023b6v2ZrkIwiYHUkblYVg__)
+
+## Regional Analysis: 21st Election Example
+
+Regional analysis provides insights into geographical strongholds and areas of contention for the major parties. For the 21st election, the distribution of vote share between the conservative and democratic parties varies significantly across different regions, indicating distinct regional political preferences.
+
+![Regional Party Strength - 21st Election](https://private-us-east-1.manuscdn.com/sessionFile/hl8mBheWX1LikkMB6iowuy/sandbox/7eErNjqdegWLlaY5A0s9RZ-images_1776180341651_na1fn_L2hvbWUvdWJ1bnR1L3JlZ2lvbmFsX3N0cmVuZ3RoXzIxc3Q.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvaGw4bUJoZVdYMUxpa2tNQjZpb3d1eS9zYW5kYm94LzdlRXJOanFkZWdXTGxhWTVBMHM5UlotaW1hZ2VzXzE3NzYxODAzNDE2NTFfbmExZm5fTDJodmJXVXZkV0oxYm5SMUwzSmxaMmx2Ym1Gc1gzTjBjbVZ1WjNSb1h6SXhjM1EucG5nIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk4NzYxNjAwfX19XX0_&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=GgTnLzBoTkNa5Ri7xY-dh~qI0qGzDoNGCU78lyYfcxW62zaJGO7tNzFtK~GWmBWvuKYbDd5z8p4WgHOSN-prlhikqUDH7IjzeoE1Rsjuse~nwnz31SC1cyseuPhFGAK~nDfMpd4QeQYt2x4fJFnSAY11wWRmoeD-vpTS5r7aZ~zbb0YMf8D~8I-GJB~68AF6~0lKOn4nS~I9gbBqHmY~u4yNar~tU-yZEygW6E9SYOqRt-Avl6V4fqddn-V8l~t7mTJ7cj9zYHE27SzLgE9QGgJ18EP3fgwRxLrVQOGcilAMsEDf8vWjaWBO5Q9Y7ZNtdztRHkVzqT0sZhBaYVVqNA__)
+
+## Conclusion
+
+The analysis of the 18th to 21st election data reveals several key trends. Voter turnout has shown an upward trajectory, suggesting increased public participation. The vote shares of major parties demonstrate a dynamic political environment with shifts in public support. Regional analysis further underscores the diverse political landscape, with certain regions consistently favoring one party over another.
+
+## References
+
+This analysis is based solely on the data provided in the `K18to21charts.xlsx` file. No external sources were used.

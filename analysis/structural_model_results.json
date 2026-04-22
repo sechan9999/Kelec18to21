@@ -1,0 +1,723 @@
+{
+  "model_spec": "dem_share_rt = alpha_r + b1*lag_dem_share_rt + b2*national_dem_share_t + b3*turnout_rate_t + e_rt",
+  "elections_used": [
+    19,
+    20,
+    21
+  ],
+  "regions_used": [
+    "강원특별자치도",
+    "경기도",
+    "경상남도",
+    "경상북도",
+    "광주광역시",
+    "대구광역시",
+    "대전광역시",
+    "부산광역시",
+    "서울특별시",
+    "세종특별자치시",
+    "울산광역시",
+    "인천광역시",
+    "전라남도",
+    "전북특별자치도",
+    "제주특별자치도",
+    "충청남도",
+    "충청북도"
+  ],
+  "model": {
+    "coefficients": {
+      "lag_dem_share": -0.520071909772829,
+      "national_dem_share": 0.6233331901421268,
+      "turnout_rate": 3.876429914101715
+    },
+    "region_fixed_effects": {
+      "강원특별자치도": -2.699007576618284,
+      "경기도": -2.5594024522585315,
+      "경상남도": -2.7268713627438053,
+      "경상북도": -2.9540409213886125,
+      "광주광역시": -2.1055520990486394,
+      "대구광역시": -2.9702829075686807,
+      "대전광역시": -2.5885850331949443,
+      "부산광역시": -2.704325732004074,
+      "서울특별시": -2.5965646111153884,
+      "세종특별자치시": -2.496032117160562,
+      "울산광역시": -2.6828256126962273,
+      "인천광역시": -2.5780345909017184,
+      "전라남도": -2.1115151205622693,
+      "전북특별자치도": -2.116111022495561,
+      "제주특별자치도": -2.523306688573938,
+      "충청남도": -2.63662284219306,
+      "충청북도": -2.6353334892748146
+    }
+  },
+  "diagnostics": {
+    "panel_size": 51,
+    "rmse": 0.02893928037791789,
+    "mae": 0.02064344541571913,
+    "fitted_rows": [
+      {
+        "election": 19,
+        "region": "강원특별자치도",
+        "actual_dem_share": 0.3416323387710964,
+        "predicted_dem_share": 0.35575528790092514,
+        "residual": -0.014122949129828755,
+        "structural_components": {
+          "region_baseline": -2.699007576618284,
+          "inertia": -0.1951842897298159,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "경기도",
+        "actual_dem_share": 0.420887603334075,
+        "predicted_dem_share": 0.4346918978308181,
+        "residual": -0.013804294496743086,
+        "structural_components": {
+          "region_baseline": -2.5594024522585315,
+          "inertia": -0.25585280415967565,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "경상남도",
+        "actual_dem_share": 0.3673403720557287,
+        "predicted_dem_share": 0.33408264537131105,
+        "residual": 0.03325772668441768,
+        "structural_components": {
+          "region_baseline": -2.7268713627438053,
+          "inertia": -0.18899314613390944,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "경상북도",
+        "actual_dem_share": 0.21732914968381625,
+        "predicted_dem_share": 0.19911846547204215,
+        "residual": 0.018210684211774103,
+        "structural_components": {
+          "region_baseline": -2.9540409213886125,
+          "inertia": -0.09678776738837085,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "광주광역시",
+        "actual_dem_share": 0.6114656819210081,
+        "predicted_dem_share": 0.6660462704487924,
+        "residual": -0.054580588527784246,
+        "structural_components": {
+          "region_baseline": -2.1055520990486394,
+          "inertia": -0.47834878475159376,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "대구광역시",
+        "actual_dem_share": 0.21762272798873966,
+        "predicted_dem_share": 0.17806111199874808,
+        "residual": 0.03956161598999158,
+        "structural_components": {
+          "region_baseline": -2.9702829075686807,
+          "inertia": -0.10160313468159639,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "대전광역시",
+        "actual_dem_share": 0.42931611024502786,
+        "predicted_dem_share": 0.4028421905643067,
+        "residual": 0.02647391968072116,
+        "structural_components": {
+          "region_baseline": -2.5885850331949443,
+          "inertia": -0.2585199304897746,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "부산광역시",
+        "actual_dem_share": 0.3871458763648567,
+        "predicted_dem_share": 0.3382625425254564,
+        "residual": 0.0488833338394003,
+        "structural_components": {
+          "region_baseline": -2.704325732004074,
+          "inertia": -0.20735887971949513,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "서울특별시",
+        "actual_dem_share": 0.42340997762644894,
+        "predicted_dem_share": 0.3859482789149351,
+        "residual": 0.037461698711513836,
+        "structural_components": {
+          "region_baseline": -2.5965646111153884,
+          "inertia": -0.2674342642187022,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "세종특별자치시",
+        "actual_dem_share": 0.5108285108088046,
+        "predicted_dem_share": 0.5064313224467321,
+        "residual": 0.0043971883620725905,
+        "structural_components": {
+          "region_baseline": -2.496032117160562,
+          "inertia": -0.24748371464173125,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "울산광역시",
+        "actual_dem_share": 0.38145197622753796,
+        "predicted_dem_share": 0.3602360701514704,
+        "residual": 0.021215906076067548,
+        "structural_components": {
+          "region_baseline": -2.6828256126962273,
+          "inertia": -0.20688547140132768,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "인천광역시",
+        "actual_dem_share": 0.4120823204886145,
+        "predicted_dem_share": 0.4220297032785534,
+        "residual": -0.009947382789938897,
+        "structural_components": {
+          "region_baseline": -2.5780345909017184,
+          "inertia": -0.2498828600687539,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "전라남도",
+        "actual_dem_share": 0.5987616154337997,
+        "predicted_dem_share": 0.6740862508200451,
+        "residual": -0.07532463538624545,
+        "structural_components": {
+          "region_baseline": -2.1115151205622693,
+          "inertia": -0.4643457828667113,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "전북특별자치도",
+        "actual_dem_share": 0.6484138674091572,
+        "predicted_dem_share": 0.685262183943316,
+        "residual": -0.036848316534158765,
+        "structural_components": {
+          "region_baseline": -2.116111022495561,
+          "inertia": -0.44857394781014825,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "제주특별자치도",
+        "actual_dem_share": 0.4551222839221078,
+        "predicted_dem_share": 0.4720249696840084,
+        "residual": -0.016902685761900627,
+        "structural_components": {
+          "region_baseline": -2.523306688573938,
+          "inertia": -0.2546154959910793,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "충청남도",
+        "actual_dem_share": 0.3862899997244612,
+        "predicted_dem_share": 0.3907812104061299,
+        "residual": -0.004491210681668689,
+        "structural_components": {
+          "region_baseline": -2.63662284219306,
+          "inertia": -0.22254310164983535,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 19,
+        "region": "충청북도",
+        "actual_dem_share": 0.3861753896465851,
+        "predicted_dem_share": 0.3896153998942755,
+        "residual": -0.003440010247690417,
+        "structural_components": {
+          "region_baseline": -2.6353334892748146,
+          "inertia": -0.22499826507993564,
+          "national_cycle": 0.25610477655160335,
+          "turnout_channel": 2.993842377697422
+        }
+      },
+      {
+        "election": 20,
+        "region": "강원특별자치도",
+        "actual_dem_share": 0.41720750815239005,
+        "predicted_dem_share": 0.40959224724813215,
+        "residual": 0.007615260904257903,
+        "structural_components": {
+          "region_baseline": -2.699007576618284,
+          "inertia": -0.1776733828648422,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "경기도",
+        "actual_dem_share": 0.5094879107750027,
+        "predicted_dem_share": 0.5079789348070656,
+        "residual": 0.0015089759679370873,
+        "structural_components": {
+          "region_baseline": -2.5594024522585315,
+          "inertia": -0.2188918196656613,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "경상남도",
+        "actual_dem_share": 0.37382363684977576,
+        "predicted_dem_share": 0.3683584351557685,
+        "residual": 0.005465201694007271,
+        "structural_components": {
+          "region_baseline": -2.7268713627438053,
+          "inertia": -0.19104340883168439,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "경상북도",
+        "actual_dem_share": 0.23802238839935916,
+        "predicted_dem_share": 0.2192054994172783,
+        "residual": 0.018816888982080865,
+        "structural_components": {
+          "region_baseline": -2.9540409213886125,
+          "inertia": -0.11302678592536734,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "광주광역시",
+        "actual_dem_share": 0.8482088205509702,
+        "predicted_dem_share": 0.8627149827254152,
+        "residual": -0.014506162174445003,
+        "structural_components": {
+          "region_baseline": -2.1055520990486394,
+          "inertia": -0.31800612495720393,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "대구광역시",
+        "actual_dem_share": 0.2160844836504873,
+        "predicted_dem_share": 0.202810831407501,
+        "residual": 0.013273652242986295,
+        "structural_components": {
+          "region_baseline": -2.9702829075686807,
+          "inertia": -0.11317946775507673,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "대전광역시",
+        "actual_dem_share": 0.4644911741871271,
+        "predicted_dem_share": 0.4744129241849402,
+        "residual": -0.00992174999781309,
+        "structural_components": {
+          "region_baseline": -2.5885850331949443,
+          "inertia": -0.22327524935137405,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "부산광역시",
+        "actual_dem_share": 0.38157251380391877,
+        "predicted_dem_share": 0.3806037794454378,
+        "residual": 0.0009687343584809938,
+        "structural_components": {
+          "region_baseline": -2.704325732004074,
+          "inertia": -0.20134369528174656,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "서울특별시",
+        "actual_dem_share": 0.4573563328886051,
+        "predicted_dem_share": 0.4695049599348118,
+        "residual": -0.012148627046206673,
+        "structural_components": {
+          "region_baseline": -2.5965646111153884,
+          "inertia": -0.2202036356810581,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "세종특별자치시",
+        "actual_dem_share": 0.5191547298502334,
+        "predicted_dem_share": 0.5245735303879511,
+        "residual": -0.005418800537717705,
+        "structural_components": {
+          "region_baseline": -2.496032117160562,
+          "inertia": -0.26566755918274526,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "울산광역시",
+        "actual_dem_share": 0.4079325635991708,
+        "predicted_dem_share": 0.40506513627175567,
+        "residual": 0.0028674273274151285,
+        "structural_components": {
+          "region_baseline": -2.6828256126962273,
+          "inertia": -0.19838245776327545,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "인천광역시",
+        "actual_dem_share": 0.4891770671871301,
+        "predicted_dem_share": 0.49392617642940717,
+        "residual": -0.004749109242277061,
+        "structural_components": {
+          "region_baseline": -2.5780345909017184,
+          "inertia": -0.21431243940013273,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "전라남도",
+        "actual_dem_share": 0.8610083547234385,
+        "predicted_dem_share": 0.8633589893316684,
+        "residual": -0.002350634608229929,
+        "structural_components": {
+          "region_baseline": -2.1115151205622693,
+          "inertia": -0.3113990968373204,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "전북특별자치도",
+        "actual_dem_share": 0.8298084165497679,
+        "predicted_dem_share": 0.832940345889031,
+        "residual": -0.0031319293392630954,
+        "structural_components": {
+          "region_baseline": -2.116111022495561,
+          "inertia": -0.3372218383466663,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "제주특별자치도",
+        "actual_dem_share": 0.5259378439336884,
+        "predicted_dem_share": 0.5262702027777779,
+        "residual": -0.0003323588440895531,
+        "structural_components": {
+          "region_baseline": -2.523306688573938,
+          "inertia": -0.2366963153795423,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "충청남도",
+        "actual_dem_share": 0.4496495347580582,
+        "predicted_dem_share": 0.4487517866553521,
+        "residual": 0.0008977481027060974,
+        "structural_components": {
+          "region_baseline": -2.63662284219306,
+          "inertia": -0.20089857788284612,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 20,
+        "region": "충청북도",
+        "actual_dem_share": 0.451246227265843,
+        "predicted_dem_share": 0.450100745055678,
+        "residual": 0.0011454822101650275,
+        "structural_components": {
+          "region_baseline": -2.6353334892748146,
+          "inertia": -0.2008389724007659,
+          "national_cycle": 0.2982971721813125,
+          "turnout_channel": 2.9879760345499458
+        }
+      },
+      {
+        "election": 21,
+        "region": "강원특별자치도",
+        "actual_dem_share": 0.4816631475323344,
+        "predicted_dem_share": 0.47515545930676373,
+        "residual": 0.006507688225570685,
+        "structural_components": {
+          "region_baseline": -2.699007576618284,
+          "inertia": -0.21697790553637664,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "경기도",
+        "actual_dem_share": 0.5790634569687745,
+        "predicted_dem_share": 0.566768138439969,
+        "residual": 0.012295318528805499,
+        "structural_components": {
+          "region_baseline": -2.5594024522585315,
+          "inertia": -0.26497035076292436,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "경상남도",
+        "actual_dem_share": 0.4311314776045062,
+        "predicted_dem_share": 0.46985440598293193,
+        "residual": -0.038722928378425725,
+        "structural_components": {
+          "region_baseline": -2.7268713627438053,
+          "inertia": -0.1944151727346874,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "경상북도",
+        "actual_dem_share": 0.2762836887754115,
+        "predicted_dem_share": 0.31331126196926773,
+        "residual": -0.037027573193856245,
+        "structural_components": {
+          "region_baseline": -2.9540409213886125,
+          "inertia": -0.12378875810354478,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "광주광역시",
+        "actual_dem_share": 0.9135460119249118,
+        "predicted_dem_share": 0.8444592612226836,
+        "residual": 0.06908675070222825,
+        "structural_components": {
+          "region_baseline": -2.1055520990486394,
+          "inertia": -0.4411295811901019,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "대구광역시",
+        "actual_dem_share": 0.2556432955753812,
+        "predicted_dem_share": 0.3084785638083596,
+        "residual": -0.052835268232978405,
+        "structural_components": {
+          "region_baseline": -2.9702829075686807,
+          "inertia": -0.11237947008438458,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "대전광역시",
+        "actual_dem_share": 0.5444349265514488,
+        "predicted_dem_share": 0.5609870962343577,
+        "residual": -0.016552169682908957,
+        "structural_components": {
+          "region_baseline": -2.5885850331949443,
+          "inertia": -0.24156881203212296,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "부산광역시",
+        "actual_dem_share": 0.43851799528864516,
+        "predicted_dem_share": 0.48837006348652734,
+        "residual": -0.04985206819788218,
+        "structural_components": {
+          "region_baseline": -2.704325732004074,
+          "inertia": -0.1984451459708232,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "서울특별시",
+        "actual_dem_share": 0.5314050771886546,
+        "predicted_dem_share": 0.5567181488539616,
+        "residual": -0.025313071665307052,
+        "structural_components": {
+          "region_baseline": -2.5965646111153884,
+          "inertia": -0.2378581814920746,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "세종특별자치시",
+        "actual_dem_share": 0.6261326446556983,
+        "predicted_dem_share": 0.6251110324800542,
+        "residual": 0.0010216121756441154,
+        "structural_components": {
+          "region_baseline": -2.496032117160562,
+          "inertia": -0.269997791820808,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "울산광역시",
+        "actual_dem_share": 0.4720777279521674,
+        "predicted_dem_share": 0.49616106135565063,
+        "residual": -0.02408333340348323,
+        "structural_components": {
+          "region_baseline": -2.6828256126962273,
+          "inertia": -0.2121542674095468,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "인천광역시",
+        "actual_dem_share": 0.5733955910428404,
+        "predicted_dem_share": 0.558699099010624,
+        "residual": 0.014696492032216457,
+        "structural_components": {
+          "region_baseline": -2.5780345909017184,
+          "inertia": -0.2544072515490822,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "전라남도",
+        "actual_dem_share": 0.9095148315222503,
+        "predicted_dem_share": 0.8318395615277754,
+        "residual": 0.07767526999447494,
+        "structural_components": {
+          "region_baseline": -2.1115151205622693,
+          "inertia": -0.44778625937138006,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "전북특별자치도",
+        "actual_dem_share": 0.8834501168986798,
+        "predicted_dem_share": 0.8434698710252584,
+        "residual": 0.039980245873421416,
+        "structural_components": {
+          "region_baseline": -2.116111022495561,
+          "inertia": -0.431560047940605,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "제주특별자치도",
+        "actual_dem_share": 0.6115437985770776,
+        "predicted_dem_share": 0.5943087539710894,
+        "residual": 0.017235044605988237,
+        "structural_components": {
+          "region_baseline": -2.523306688573938,
+          "inertia": -0.2735254989163974,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "충청남도",
+        "actual_dem_share": 0.5242614695772397,
+        "predicted_dem_share": 0.5206680069982768,
+        "residual": 0.0035934625789629804,
+        "structural_components": {
+          "region_baseline": -2.63662284219306,
+          "inertia": -0.23385009227008738,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      },
+      {
+        "election": 21,
+        "region": "충청북도",
+        "actual_dem_share": 0.5234214930322035,
+        "predicted_dem_share": 0.521126964994679,
+        "residual": 0.0022945280375245014,
+        "structural_components": {
+          "region_baseline": -2.6353334892748146,
+          "inertia": -0.23468048719193102,
+          "national_cycle": 0.3141854547473064,
+          "turnout_channel": 3.0769554867141182
+        }
+      }
+    ]
+  }
+}

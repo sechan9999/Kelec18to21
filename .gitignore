@@ -35,6 +35,11 @@ yarn-error.log*
 
 # vercel
 .vercel
+# local agent/tooling state
+.bkit/
+.claude/
+docs/.bkit-memory.json
+docs/.pdca-status.json
 
 # typescript
 *.tsbuildinfo
