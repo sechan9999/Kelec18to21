@@ -20,15 +20,16 @@ export type ComparisonData = {
   meta: { title: string; built: string; numerator: string; definitions: Record<string, string>; why_conservative: string; units: string };
   elections: Election[];
   tests_vs_20: { election: string; slope_diff: number; slope_p: number; level_diff_at_half: number; level_p: number }[];
-  provinces: ({ province: string } & Partial<Record<'19대' | '20대' | '21대', ProvCell>>)[];
+  provinces: ({ province: string } & Partial<Record<'18대' | '19대' | '20대' | '21대', ProvCell>>)[];
   province_log_or_corr: Record<string, number>;
-  data_quality: { pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number } }; pe20: { fixes: string[] } };
+  data_quality: { pe18?: { name_fixes: string[]; within_2pct: number; pct_2_10: number; over_10pct: number; over_10pct_units: string[]; note: string; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
   figures: { file: string; title: string }[];
 };
 
-const COLORS: Record<string, string> = { '18대': '#94a3b8', '19대': '#1baf7a', '20대': '#2a78d6', '21대': '#eb6834' };
+const COLORS: Record<string, string> = { '18대': '#9b59b6', '19대': '#1baf7a', '20대': '#2a78d6', '21대': '#eb6834' };
 const ABBR: Record<string, string> = { 경상북도: '경북', 경상남도: '경남', 충청북도: '충북', 충청남도: '충남', 전라남도: '전남', 전북특별자치도: '전북', 강원특별자치도: '강원', 제주특별자치도: '제주', 경기도: '경기' };
 const short = (s: string) => ABBR[s] ?? s.replace(/특별자치시|광역시|특별시/g, '');
+const PROV_E = ['18대', '19대', '20대', '21대'] as const;
 const pfmt = (p: number) => (p < 0.001 ? '< 0.001' : `= ${p.toFixed(p < 0.01 ? 3 : 2)}`);
 // 셀 배경: OR 1 에서 멀수록 진하게
 const cellBg = (v?: number) => {
@@ -161,7 +162,7 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
                     <td className="text-right font-semibold text-white">{t.level_diff_at_half >= 0 ? '+' : ''}{t.level_diff_at_half.toFixed(3)} <span className="text-xs font-normal text-slate-500">p {pfmt(t.level_p)}</span></td>
                   </tr>))}</tbody>
               </table>
-              <p className="mt-3 text-xs text-slate-500">기울기는 세 선거가 같고(약 1.11), 높이만 다릅니다. 19대 선이 약 6%p 위에 있습니다.</p>
+              <p className="mt-3 text-xs text-slate-500">19·21대는 20대와 기울기가 같고(약 1.11) 높이만 다릅니다. 18대는 기울기가 1.06으로 낮은 대신 절편이 커서 선 전체가 위에 있습니다.</p>
             </Card>
             <Card title="곡선성 (2차항)">
               <ul className="space-y-1 text-sm text-slate-300">
@@ -185,11 +186,11 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
         <Card title="시도별 OR (보수 후보 분자, 95% 구간)" sub={`log OR 상관: ${Object.entries(data.province_log_or_corr).map(([k, v]) => `${k} ${v}`).join(' · ')}`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-slate-400"><tr><th className="py-2 text-left">시도</th>{['19대', '20대', '21대'].map((e) => <th key={e} className="text-right" style={{ color: COLORS[e] }}>{e} OR [95%]</th>)}</tr></thead>
+              <thead className="text-slate-400"><tr><th className="py-2 text-left">시도</th>{PROV_E.map((e) => <th key={e} className="text-right" style={{ color: COLORS[e] }}>{e} OR [95%]</th>)}</tr></thead>
               <tbody>{data.provinces.map((p) => (
                 <tr key={p.province} className="border-t border-white/5 text-slate-300">
                   <td className="py-2">{short(p.province)}</td>
-                  {(['19대', '20대', '21대'] as const).map((e) => {
+                  {PROV_E.map((e) => {
                     const c = p[e];
                     return <td key={e} className="px-2 text-right" style={{ background: cellBg(c?.OR) }}>
                       {c ? <><b className="text-white">{c.OR.toFixed(2)}</b> <span className="text-xs text-slate-400">[{c.lo.toFixed(2)}, {c.hi > 9 ? '…' : c.hi.toFixed(2)}]</span></> : '–'}
@@ -199,14 +200,25 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
             </table>
           </div>
           <p className="mt-3 text-xs text-slate-500">세종은 충남에 포함. 제주는 구·시·군이 2곳뿐이라 구간이 넓습니다.</p>
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 text-xs text-slate-400">
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3 text-xs text-slate-400">
+            {data.data_quality.pe18 && (
+              <div>
+                <h3 className="mb-1 font-semibold text-slate-300">18대 자료 점검</h3>
+                <ul className="list-disc space-y-0.5 pl-4">
+                  {data.data_quality.pe18.name_fixes.map((f) => <li key={f}>{f}</li>)}
+                  <li>공개 최종득표 대조: 2% 미만 {data.data_quality.pe18.within_2pct}곳, 2–10% {data.data_quality.pe18.pct_2_10}곳, 10% 이상 {data.data_quality.pe18.over_10pct}곳 ({data.data_quality.pe18.over_10pct_units.join('·')})</li>
+                  <li>{data.data_quality.pe18.note}</li>
+                  <li>10% 이상 {data.data_quality.pe18.over_10pct}곳 제외 시 {data.data_quality.pe18.sensitivity_excluding.intercept.toFixed(3)} + {data.data_quality.pe18.sensitivity_excluding.slope.toFixed(3)}·R1, R² {data.data_quality.pe18.sensitivity_excluding.r2.toFixed(3)}</li>
+                </ul>
+              </div>
+            )}
             <div>
               <h3 className="mb-1 font-semibold text-slate-300">19대 자료 점검</h3>
               <ul className="list-disc space-y-0.5 pl-4">
                 {data.data_quality.pe19.name_fixes.map((f) => <li key={f}>{f}</li>)}
                 <li>공개 최종득표 대조: 2% 미만 {data.data_quality.pe19.within_2pct}곳, 2% 이상 {data.data_quality.pe19.over_2pct}곳</li>
                 <li>2% 이상 {data.data_quality.pe19.over_2pct}곳 제외 시 {data.data_quality.pe19.sensitivity_excluding.intercept.toFixed(3)} + {data.data_quality.pe19.sensitivity_excluding.slope.toFixed(3)}·R1, R² {data.data_quality.pe19.sensitivity_excluding.r2.toFixed(3)}</li>
-                <li>SAS 보고값: n {data.data_quality.pe19.sas_reported.n}, R² {data.data_quality.pe19.sas_reported.r2}, MSE {data.data_quality.pe19.sas_reported.mse}</li>
+                <li>SAS 보고값: n {data.data_quality.pe19.sas_reported.n}, R² {data.data_quality.pe19.sas_reported.r2}, MSE {data.data_quality.pe19.sas_reported.mse}{data.data_quality.pe19.sas_reported.note ? ` — ${data.data_quality.pe19.sas_reported.note}` : ''}</li>
               </ul>
             </div>
             <div>
