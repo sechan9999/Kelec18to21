@@ -5768,6 +5768,23 @@
    "kurt": 0.923,
    "shapiro_p": 0.0
   },
+  "21대_당선인분자_선형": {
+   "n": 252,
+   "params": {
+    "Intercept": -0.1206,
+    "R_1": 1.1168
+   },
+   "se": {
+    "Intercept": 0.0054,
+    "R_1": 0.0095
+   },
+   "r2": 0.9824,
+   "mse": 0.000854,
+   "resid_sd": 0.0292,
+   "skew": 0.415,
+   "kurt": 0.313,
+   "shapiro_p": 0.0349
+  },
   "21대_관내사전_선형": {
    "n": 252,
    "params": {
@@ -6118,6 +6135,14 @@
   {
    "file": "/analysis/r1_control_regression.png",
    "title": "투표구 단위 R1 통제 회귀"
+  },
+  {
+   "file": "/analysis/k21_winner_numerator_fitplot.png",
+   "title": "21대 당선인(이재명) 분자 Fit Plot과 K 비교"
+  },
+  {
+   "file": "/analysis/k21_winner_numerator_diagnostics.png",
+   "title": "21대 당선인(이재명) 분자 Fit Diagnostics"
   },
   {
    "file": "/analysis/age_test.png",
