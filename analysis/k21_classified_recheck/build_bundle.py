@@ -69,6 +69,7 @@ t2 = t.assign(R_1=t.R1, R_2=t.R2)
 D = pd.concat([pd.DataFrame({"R_1": p20.R_1.values, "R_2": p20.R_2.values, "e": "20대"}), pd.DataFrame({"R_1": k.R1.values, "R_2": k.R2.values, "e": "21대"})])
 D["c"] = D.R_1 - .5; MI = smf.ols("R_2 ~ c * C(e)", D).fit(cov_type="HC3")
 reg = {"20대_보정_선형": fit(p20), "21대_선형": fit(k.assign(R_1=k.R1, R_2=k.R2)), "21대_2차": fit(k.assign(R_1=k.R1, R_2=k.R2, R_1sq=k.R1 ** 2), "R_2 ~ R_1sq + R_1"),
+       "21대_당선인분자_선형": fit(k.assign(R_1=k.L1 / (k.L1 + k.Y1), R_2=k.L2 / (k.L2 + k.Y2))),
        "21대_관내사전_선형": fit(t2[t2["class"] == "관내사전"]), "21대_선거일_선형": fit(t2[t2["class"] == "선거일"]),
        "20대21대_비교": dict(slope_diff=R(MI.params["c:C(e)[T.21대]"]), slope_p=R(MI.pvalues["c:C(e)[T.21대]"]),
                           level_diff_at_R1_0_5=R(MI.params["C(e)[T.21대]"]), level_p=R(MI.pvalues["C(e)[T.21대]"], 6))}
@@ -110,6 +111,7 @@ J = dict(meta=dict(title="21대 대선 분류/재확인 투표지 분석 (개표
              ("k21_fitplot", "21대 Fit Plot"), ("k21_fit_diagnostics", "21대 Fit Diagnostics"), ("k20_fitplot_corrected", "20대 보정 Fit Plot"),
              ("k20_fit_diagnostics_corrected", "20대 보정 Fit Diagnostics"), ("residuals_20_vs_21", "잔차 분포 20대 vs 21대"),
              ("invalid_recheck_or", "무효표·재확인율과 OR"), ("r1_control_regression", "투표구 단위 R1 통제 회귀"),
+             ("k21_winner_numerator_fitplot", "21대 당선인(이재명) 분자 Fit Plot과 K 비교"), ("k21_winner_numerator_diagnostics", "21대 당선인(이재명) 분자 Fit Diagnostics"),
              ("age_test", "연령 검정"), ("or_ci_change", "시도 OR 신뢰구간과 20→21 변화")]])
 (OUT / "summaries/k21_classified_recheck.json").write_text(json.dumps(J, ensure_ascii=False, indent=1), encoding="utf-8")
 
@@ -117,11 +119,12 @@ J = dict(meta=dict(title="21대 대선 분류/재확인 투표지 분석 (개표
 FIG = {"K20_K21_FitPlot_겹침.png": "k20_k21_fitplot_overlay", "K21_투표구분별_FitPlot.png": "k21_fitplot_by_type", "K21_FitPlot.png": "k21_fitplot",
        "K21_FitDiagnostics.png": "k21_fit_diagnostics", "K20_FitPlot_보정.png": "k20_fitplot_corrected", "K20_FitDiagnostics_보정.png": "k20_fit_diagnostics_corrected",
        "잔차분포_20대_21대_비교.png": "residuals_20_vs_21", "무효표_재확인_OR.png": "invalid_recheck_or", "R1_통제_회귀_그림.png": "r1_control_regression",
-       "연령_검정_그림.png": "age_test", "OR_신뢰구간_변화_그림.png": "or_ci_change"}
+       "연령_검정_그림.png": "age_test", "OR_신뢰구간_변화_그림.png": "or_ci_change",
+       "K21_당선인분자_FitPlot.png": "k21_winner_numerator_fitplot", "K21_당선인분자_Diagnostics.png": "k21_winner_numerator_diagnostics"}
 for a, b in FIG.items(): shutil.copy(a, OUT / "public/analysis" / f"{b}.png")
 # Step 8. 분석 스크립트 사본
 for f in ["k21reg.py", "k20fix.py", "k20fitplot.py", "overlay.py", "overlay_type.py", "pre_decomp.py", "pre_decomp2.py", "invalid.py", "invfig.py",
-          "r1reg.py", "r1reg2.py", "age_merge.py", "age_reg.py", "ci_change.py", "build_bundle.py", "k21elec.sas"]:
+          "r1reg.py", "r1reg2.py", "k21_lee.py", "age_merge.py", "age_reg.py", "ci_change.py", "build_bundle.py", "k21elec.sas"]:
     shutil.copy(f, OUT / "analysis/k21_classified_recheck" / f)
 print(json.dumps(dict(national=nat, reg20_21=reg["20대21대_비교"]), ensure_ascii=False)[:1500])
 print("provinces", len(prov), "districts", len(dist)); print([(p["province"], p["전체"]["OR"], p.get("OR20", {}).get("OR")) for p in prov])

@@ -28,7 +28,21 @@ export type ClassifiedRecheckData = {
 
 const short = (s: string) => s.replace(/특별자치시|특별자치도|광역시|특별시|도$/g, '');
 const f3 = (v?: number) => (v == null ? '–' : v.toFixed(3));
-const orColor = (v: number) => (v >= 1.4 ? 'text-rose-400' : v >= 1.2 ? 'text-amber-300' : v > 1.05 ? 'text-yellow-200' : 'text-emerald-400');
+const orColor = (v: number) => {
+  const d = Math.abs(Math.log(v));
+  return d >= Math.log(1.4) ? 'text-rose-400' : d >= Math.log(1.2) ? 'text-amber-300' : d > Math.log(1.05) ? 'text-yellow-200' : 'text-emerald-400';
+};
+
+// 분자 전환: 두 후보 양자 비율이므로 R_이 = 1 - R_김, OR_이 = 1 / OR_김
+type Num = 'kim' | 'lee';
+const flipBlock = (b: Block | undefined, num: Num): Block | undefined =>
+  !b || num === 'kim' ? b : { ...b, R1: 1 - b.R1, R2: 1 - b.R2, K: (1 - b.R2) / (1 - b.R1), OR: 1 / b.OR, lo: 1 / b.hi, hi: 1 / b.lo };
+const flipDistrict = (d: District, num: Num): District =>
+  num === 'kim' ? d : {
+    ...d, R1: 1 - d.R1, R2: 1 - d.R2, K: (1 - d.R2) / (1 - d.R1), OR: 1 / d.OR,
+    OR_pre: d.OR_pre != null ? 1 / d.OR_pre : undefined, OR_day: d.OR_day != null ? 1 / d.OR_day : undefined,
+    pred: 1 - d.pred, pi_lo: 1 - d.pi_hi, pi_hi: 1 - d.pi_lo, rstudent: -d.rstudent,
+  };
 
 // 아주 작은 마크다운 렌더러: 제목, 목록, 표, 이미지, 굵게, 코드
 function inline(text: string): React.ReactNode[] {
@@ -85,9 +99,9 @@ function Card({ title, children, sub }: { title: string; sub?: string; children:
 }
 
 // OR 과 구간을 가로 막대로 (x 축 0.8 ~ 2.0, 1 에 기준선)
-function OrBar({ v, lo, hi, color }: { v?: number; lo?: number; hi?: number; color: string }) {
+function OrBar({ v, lo, hi, color, X0 = 0.8, X1 = 2.0 }: { v?: number; lo?: number; hi?: number; color: string; X0?: number; X1?: number }) {
   if (v == null) return <div className="h-3" />;
-  const X0 = 0.8, X1 = 2.0, pos = (x: number) => `${Math.min(100, Math.max(0, ((x - X0) / (X1 - X0)) * 100))}%`;
+  const pos = (x: number) => `${Math.min(100, Math.max(0, ((x - X0) / (X1 - X0)) * 100))}%`;
   return (
     <div className="relative h-3 w-full">
       <div className="absolute inset-y-0 w-px bg-slate-500" style={{ left: pos(1) }} />
@@ -100,18 +114,26 @@ function OrBar({ v, lo, hi, color }: { v?: number; lo?: number; hi?: number; col
 export default function ClassifiedRecheckView({ data, report }: { data: ClassifiedRecheckData; report?: string }) {
   const [tab, setTab] = useState<'summary' | 'districts' | 'figures' | 'report'>('summary');
   const [q, setQ] = useState('');
-  const n = data.national;
+  const [num, setNum] = useState<Num>('kim');
+  const n: Record<string, Block> = useMemo(() => Object.fromEntries(Object.entries(data.national).map(([k, b]) => [k, flipBlock(b, num)!])), [data.national, num]);
+  const provinces = useMemo(() => data.provinces.map((p) => ({ ...p, 전체: flipBlock(p.전체, num)!, 관내사전: flipBlock(p.관내사전, num), 선거일: flipBlock(p.선거일, num) }))
+    .sort((a, b) => a.전체.OR - b.전체.OR), [data.provinces, num]);
+  const numName = num === 'kim' ? '김문수(보수 후보)' : '이재명(당선인)';
+  const [AX0, AX1] = num === 'kim' ? [0.8, 2.0] : [0.5, 1.6];
+  const regLine = num === 'kim' ? data.regression['21대_선형'] : data.regression['21대_당선인분자_선형'];
   const reg = data.regression;
   const cmp = reg['20대21대_비교'];
-  const districts = useMemo(() => data.districts
+  const districts = useMemo(() => data.districts.map((d) => flipDistrict(d, num))
     .filter((d) => !q || d.province.includes(q) || d.district.includes(q))
-    .sort((a, b) => a.rstudent - b.rstudent), [data.districts, q]);
+    .sort((a, b) => a.rstudent - b.rstudent), [data.districts, q, num]);
 
   const kpis = [
     { label: '분석 행 (투표구)', value: data.meta.rows_used.toLocaleString(), sub: `전체 ${data.meta.rows_total.toLocaleString()}행 중 대조용 ${data.meta.rows_excluded}행 제외` },
     { label: '전국 OR', value: n['전체'].OR.toFixed(3), sub: `95% [${n['전체'].lo.toFixed(3)}, ${n['전체'].hi.toFixed(3)}] · K ${n['전체'].K.toFixed(3)}` },
     { label: '관내사전 OR', value: n['관내사전'].OR.toFixed(3), sub: `선거일 ${n['선거일'].OR.toFixed(3)} · 관외사전 ${n['관외사전'].OR.toFixed(3)}` },
-    { label: '기울기 20대 → 21대', value: `${reg['20대_보정_선형'].params.R_1.toFixed(3)} → ${reg['21대_선형'].params.R_1.toFixed(3)}`, sub: `차이 p = ${cmp.slope_p.toFixed(2)} · R1=0.5 높이 +${cmp.level_diff_at_R1_0_5.toFixed(3)}` },
+    num === 'kim'
+      ? { label: '기울기 20대 → 21대', value: `${reg['20대_보정_선형'].params.R_1.toFixed(3)} → ${reg['21대_선형'].params.R_1.toFixed(3)}`, sub: `차이 p = ${cmp.slope_p.toFixed(2)} · R1=0.5 높이 +${cmp.level_diff_at_R1_0_5.toFixed(3)}` }
+      : { label: '21대 적합식 (이재명 분자)', value: `${regLine.params.Intercept.toFixed(3)} + ${regLine.params.R_1.toFixed(3)}·R1`, sub: `R² ${regLine.r2.toFixed(4)} · 기울기·R²는 김문수 분자와 같고 절편만 다름` },
   ];
 
   const TabBtn = ({ id, label }: { id: typeof tab; label: string }) => (
@@ -122,9 +144,19 @@ export default function ClassifiedRecheckView({ data, report }: { data: Classifi
     <div className="space-y-6">
       <div className="rounded-3xl border border-violet-500/20 bg-violet-500/5 p-6">
         <h1 className="text-2xl font-bold text-white">{data.meta.title}</h1>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-slate-400">분자</span>
+          {(['kim', 'lee'] as Num[]).map((v) => (
+            <button key={v} onClick={() => setNum(v)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${num === v ? 'bg-violet-600 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}>
+              {v === 'kim' ? '보수 후보 (김문수)' : '당선인 (이재명)'}
+            </button>
+          ))}
+        </div>
         <p className="mt-2 text-sm text-slate-400">
-          R1 = {data.meta.definitions.R1} · R2 = {data.meta.definitions.R2} · K = R2/R1 · OR = {data.meta.definitions.OR}.
-          분자는 보수 후보(김문수)이므로 K, OR &gt; 1 이면 재확인대상에서 보수 후보 비율이 더 높습니다.
+          R1 = {num === 'kim' ? '김문수' : '이재명'}/(이재명+김문수), 분류된 투표지 · R2 = 같은 비율, 재확인대상 투표지 (= 공개 최종득표 − 분류) · K = R2/R1 ·
+          OR = (재확인 분자/상대) ÷ (분류 분자/상대). 분자는 {numName}이므로 K, OR &gt; 1 이면 재확인대상에서 {num === 'kim' ? '김문수' : '이재명'} 비율이 더 높습니다.
+          {num === 'lee' && ' 두 후보 양자 비율이라 R_이 = 1 − R_김, OR_이 = 1/OR_김 입니다. K는 분자 후보의 기본 득표율에 따라 크기가 달라지므로 지역 비교에는 OR이 더 적합합니다.'}
         </p>
         <p className="mt-2 text-xs text-amber-300/80">※ {data.meta.not_same_as}</p>
         <p className="mt-1 text-xs text-slate-500">검산: {data.meta.checks.join(' · ')} · 작성 {data.meta.built}</p>
@@ -163,31 +195,31 @@ export default function ClassifiedRecheckView({ data, report }: { data: Classifi
             </table>
           </Card>
 
-          <Card title="시도별 OR (21대 관내사전·선거일, 20대 보정)" sub="점 = OR, 선 = 95% 구간, 세로선 = 1">
+          <Card title={`시도별 OR (분자 ${numName})`} sub="점 = OR, 선 = 95% 구간, 세로선 = 1">
             <div className="mb-2 flex gap-4 text-xs text-slate-400">
               <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#eb6834]" />21대 관내사전</span>
               <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#1baf7a]" />21대 선거일</span>
-              <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#2a78d6]" />20대 전체</span>
+              <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#2a78d6]" />20대 전체 (분자 윤석열: 보수 후보이자 당선인)</span>
             </div>
             <div className="space-y-2">
-              {data.provinces.map((p) => (
+              {provinces.map((p) => (
                 <div key={p.province} className="grid grid-cols-[4.5rem_3.5rem_1fr] items-center gap-2 text-sm">
                   <span className="text-slate-300">{short(p.province)}</span>
                   <span className={`text-right font-semibold ${orColor(p.전체.OR)}`}>{p.전체.OR.toFixed(2)}</span>
                   <div className="space-y-0.5">
-                    <OrBar v={p.관내사전?.OR} lo={p.관내사전?.lo} hi={p.관내사전?.hi} color="#eb6834" />
-                    <OrBar v={p.선거일?.OR} lo={p.선거일?.lo} hi={p.선거일?.hi} color="#1baf7a" />
-                    <OrBar v={p.OR20?.OR} lo={p.OR20?.lo} hi={p.OR20?.hi} color="#2a78d6" />
+                    <OrBar v={p.관내사전?.OR} lo={p.관내사전?.lo} hi={p.관내사전?.hi} color="#eb6834" X0={AX0} X1={AX1} />
+                    <OrBar v={p.선거일?.OR} lo={p.선거일?.lo} hi={p.선거일?.hi} color="#1baf7a" X0={AX0} X1={AX1} />
+                    <OrBar v={p.OR20?.OR} lo={p.OR20?.lo} hi={p.OR20?.hi} color="#2a78d6" X0={AX0} X1={AX1} />
                   </div>
                 </div>
               ))}
-              <div className="grid grid-cols-[4.5rem_3.5rem_1fr] text-[10px] text-slate-500"><span /><span className="text-right">21대 전체</span><div className="flex justify-between"><span>0.8</span><span>1.0</span><span>1.4</span><span>2.0</span></div></div>
+              <div className="grid grid-cols-[4.5rem_3.5rem_1fr] text-[10px] text-slate-500"><span /><span className="text-right">21대 전체</span><div className="flex justify-between"><span>{AX0}</span><span>{AX1}</span></div></div>
             </div>
           </Card>
 
           <Card title="관내사전 vs 선거일 (같은 구·시·군 안)">
             <p className="text-sm text-slate-300">
-              관내사전 OR ÷ 선거일 OR = <b className="text-white">{data.pre_vs_day.OR_ratio_pre_over_day}</b> ·
+              관내사전 OR ÷ 선거일 OR = <b className="text-white">{num === 'kim' ? data.pre_vs_day.OR_ratio_pre_over_day : (1 / data.pre_vs_day.OR_ratio_pre_over_day).toFixed(3)}</b> ·
               관내사전이 더 큰 곳 {data.pre_vs_day.districts_pre_higher}/{data.pre_vs_day.districts}
             </p>
             <p className="mt-2 text-xs text-slate-500">{data.pre_vs_day.note}</p>
@@ -205,7 +237,7 @@ export default function ClassifiedRecheckView({ data, report }: { data: Classifi
       )}
 
       {tab === 'districts' && (
-        <Card title={`구·시·군 ${data.districts.length}곳`} sub="RStudent 오름차순 (적합선 아래로 크게 벗어난 곳부터)">
+        <Card title={`구·시·군 ${data.districts.length}곳 (분자 ${numName})`} sub="RStudent 오름차순 (적합선 아래로 크게 벗어난 곳부터)">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="시도·구시군 검색" className="mb-4 w-full rounded-xl bg-white/5 px-4 py-2 text-sm text-white ring-1 ring-white/10 placeholder:text-slate-500 sm:w-72" />
           <div className="max-h-[36rem] overflow-auto rounded-xl border border-white/5">
             <table className="w-full text-sm">
