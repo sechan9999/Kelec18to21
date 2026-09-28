@@ -52,7 +52,7 @@ function inline(text: string): React.ReactNode[] {
     : p.startsWith('`') ? <code key={i} className="rounded bg-white/10 px-1 text-[0.85em] text-sky-200">{p.slice(1, -1)}</code>
     : <React.Fragment key={i}>{p}</React.Fragment>);
 }
-function Markdown({ md }: { md: string }) {
+export function Markdown({ md }: { md: string }) {
   const lines = md.split('\n'); const out: React.ReactNode[] = []; let i = 0;
   while (i < lines.length) {
     const l = lines[i];
