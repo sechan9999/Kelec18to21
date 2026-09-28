@@ -34,6 +34,11 @@ import {
 } from 'lucide-react';
 
 import type { ElectionRecord, RegionalRecord } from '../types/election';
+import dynamic from 'next/dynamic';
+import type { ClassifiedRecheckData } from './ClassifiedRecheckView';
+
+// 21대 분류/재확인(개표상황표 판독) 분석 화면
+const ClassifiedRecheckView = dynamic(() => import('./ClassifiedRecheckView'), { ssr: false });
 
 interface RecountSummary {
   candidateRatios: { name: string; party: string; r1: number; r2: number; k: number }[];
@@ -91,7 +96,9 @@ interface Props {
   recountData?: any[];
   recountSummary?: RecountSummary;
   electionReports?: Record<string, ElectionReport>;
+  classifiedRecheck?: ClassifiedRecheckData;
   reports: {
+    classifiedRecheck?: string;
     analysis: string;
     excelAudit: string;
     presentationAudit: string;
@@ -112,7 +119,7 @@ function kColor(k: number): string {
   return '#10b981';
 }
 
-type View = 'insight' | 'report' | 'audit' | 'recount';
+type View = 'insight' | 'report' | 'audit' | 'recount' | 'classified';
 
 const CONSERVATIVE = '#f43f5e'; // Rose 500
 const DEMOCRATIC = '#3b82f6';    // Blue 500
@@ -161,7 +168,7 @@ const ELECTION_LABELS: Record<string, string> = {
 
 const ELECTIONS = ['18th', '19th', '20th', '21st'] as const;
 
-export default function ElectionDashboard({ electionData, regionalData, reports, recountData, recountSummary, electionReports }: Props) {
+export default function ElectionDashboard({ electionData, regionalData, reports, recountData, recountSummary, electionReports, classifiedRecheck }: Props) {
   const [view, setView] = useState<View>('insight');
   const [selectedElection, setSelectedElection] = useState<(typeof ELECTIONS)[number]>('21st');
   const [reportElection, setReportElection] = useState<(typeof ELECTIONS)[number]>('21st');
@@ -254,7 +261,7 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
       setSelectedElection(electionParam as (typeof ELECTIONS)[number]);
       setReportElection(electionParam as (typeof ELECTIONS)[number]);
     }
-    if (viewParam && ['insight', 'report', 'audit', 'recount'].includes(viewParam)) {
+    if (viewParam && ['insight', 'report', 'audit', 'recount', 'classified'].includes(viewParam)) {
       setView(viewParam as View);
     }
     if (langParam === 'ko' || langParam === 'en') {
@@ -425,7 +432,15 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
                 view === 'recount' ? 'bg-rose-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Search className="h-4 w-4" /> 재확인표분석
+              <Search className="h-4 w-4" /> 관외/관내 K
+            </button>
+            <button
+              onClick={() => setView('classified')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                view === 'classified' ? 'bg-violet-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Activity className="h-4 w-4" /> 분류·재확인
             </button>
           </nav>
           </div>
@@ -777,6 +792,13 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
           </div>
         )}
 
+        {/* Classified vs Recheck View (개표상황표 판독) */}
+        {view === 'classified' && classifiedRecheck && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <ClassifiedRecheckView data={classifiedRecheck} report={reports.classifiedRecheck} />
+          </div>
+        )}
+
         {/* Recount View */}
         {view === 'recount' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -971,7 +993,8 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
             <div className="rounded-3xl border border-white/5 bg-slate-900/40 p-6 backdrop-blur shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-white">21대 대선 재확인표 K값 (관내/관외) 분석</h2>
+                  <h2 className="text-xl font-bold text-white">21대 대선 관외사전/관내 K값 분석 (이재명 기준)</h2>
+                  <p className="text-xs text-amber-300/80">이 화면의 K는 관외사전 득표율 ÷ 관내 득표율입니다. 분류된 투표지 대 재확인대상 비교는 &lsquo;분류·재확인&rsquo; 탭을 보세요.</p>
                   <p className="text-sm text-slate-400">Analysis of the K-value (R2/R1) for statistical anomalies in absentee vs local voting.</p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20">
