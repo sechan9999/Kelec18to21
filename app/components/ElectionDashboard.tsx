@@ -36,9 +36,12 @@ import {
 import type { ElectionRecord, RegionalRecord } from '../types/election';
 import dynamic from 'next/dynamic';
 import type { ClassifiedRecheckData } from './ClassifiedRecheckView';
+import type { ComparisonData } from './CompareElectionsView';
 
 // 21대 분류/재확인(개표상황표 판독) 분석 화면
 const ClassifiedRecheckView = dynamic(() => import('./ClassifiedRecheckView'), { ssr: false });
+// 18–21대 분류/미분류 비교 화면 (보수 후보 분자)
+const CompareElectionsView = dynamic(() => import('./CompareElectionsView'), { ssr: false });
 
 interface RecountSummary {
   candidateRatios: { name: string; party: string; r1: number; r2: number; k: number }[];
@@ -97,8 +100,10 @@ interface Props {
   recountSummary?: RecountSummary;
   electionReports?: Record<string, ElectionReport>;
   classifiedRecheck?: ClassifiedRecheckData;
+  comparison?: ComparisonData;
   reports: {
     classifiedRecheck?: string;
+    comparison?: string;
     analysis: string;
     excelAudit: string;
     presentationAudit: string;
@@ -119,7 +124,7 @@ function kColor(k: number): string {
   return '#10b981';
 }
 
-type View = 'insight' | 'report' | 'audit' | 'recount' | 'classified';
+type View = 'insight' | 'report' | 'audit' | 'recount' | 'classified' | 'compare';
 
 const CONSERVATIVE = '#f43f5e'; // Rose 500
 const DEMOCRATIC = '#3b82f6';    // Blue 500
@@ -168,7 +173,7 @@ const ELECTION_LABELS: Record<string, string> = {
 
 const ELECTIONS = ['18th', '19th', '20th', '21st'] as const;
 
-export default function ElectionDashboard({ electionData, regionalData, reports, recountData, recountSummary, electionReports, classifiedRecheck }: Props) {
+export default function ElectionDashboard({ electionData, regionalData, reports, recountData, recountSummary, electionReports, classifiedRecheck, comparison }: Props) {
   const [view, setView] = useState<View>('insight');
   const [selectedElection, setSelectedElection] = useState<(typeof ELECTIONS)[number]>('21st');
   const [reportElection, setReportElection] = useState<(typeof ELECTIONS)[number]>('21st');
@@ -261,7 +266,7 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
       setSelectedElection(electionParam as (typeof ELECTIONS)[number]);
       setReportElection(electionParam as (typeof ELECTIONS)[number]);
     }
-    if (viewParam && ['insight', 'report', 'audit', 'recount', 'classified'].includes(viewParam)) {
+    if (viewParam && ['insight', 'report', 'audit', 'recount', 'classified', 'compare'].includes(viewParam)) {
       setView(viewParam as View);
     }
     if (langParam === 'ko' || langParam === 'en') {
@@ -441,6 +446,14 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
               }`}
             >
               <Activity className="h-4 w-4" /> 분류·재확인
+            </button>
+            <button
+              onClick={() => setView('compare')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                view === 'compare' ? 'bg-teal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <TrendingUp className="h-4 w-4" /> 18–21대 비교
             </button>
           </nav>
           </div>
@@ -796,6 +809,13 @@ export default function ElectionDashboard({ electionData, regionalData, reports,
         {view === 'classified' && classifiedRecheck && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <ClassifiedRecheckView data={classifiedRecheck} report={reports.classifiedRecheck} />
+          </div>
+        )}
+
+        {/* 18–21대 비교 View */}
+        {view === 'compare' && comparison && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <CompareElectionsView data={comparison} report={reports.comparison} />
           </div>
         )}
 

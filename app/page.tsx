@@ -6,6 +6,7 @@ import k21RecountData from '../summaries/k21_recount.json';
 import k21RecountSummary from '../summaries/k21_recount_summary.json';
 import electionReports from '../summaries/election_reports.json';
 import classifiedRecheck from '../summaries/k21_classified_recheck.json';
+import comparison from '../summaries/k18_21_comparison.json';
 import ElectionDashboard from './components/ElectionDashboard';
 import type { ElectionRecord, RegionalRecord } from './types/election';
 
@@ -16,6 +17,7 @@ export default async function Home() {
   const excelAudit = fs.readFileSync(path.join(reportsDir, 'excel_audit_report.md'), 'utf-8');
   const presentationAudit = fs.readFileSync(path.join(reportsDir, 'presentation_audit_report.md'), 'utf-8');
   const classifiedRecheckReport = fs.readFileSync(path.join(reportsDir, 'k21_classified_recheck_report.md'), 'utf-8');
+  const comparisonReport = fs.readFileSync(path.join(reportsDir, 'k18_21_comparison_report.md'), 'utf-8');
 
   return (
     <ElectionDashboard
@@ -25,11 +27,13 @@ export default async function Home() {
       recountSummary={k21RecountSummary as any}
       electionReports={electionReports as any}
       classifiedRecheck={classifiedRecheck as any}
+      comparison={comparison as any}
       reports={{
         analysis: analysisReport,
         excelAudit: excelAudit,
         presentationAudit: presentationAudit,
         classifiedRecheck: classifiedRecheckReport,
+        comparison: comparisonReport,
       }}
     />
   );
