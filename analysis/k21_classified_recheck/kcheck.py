@@ -10,6 +10,7 @@ S = {"18대": (sheet("data18"), "P1", "M1", "P2", "M2", "K"), "19대": (sheet("d
 rows = []
 for e, (d, c1, d1, c2, d2, kcol) in S.items():
     d = d.dropna(subset=[c1]).copy()
+    if e == "20대": d = d[d.district != "제천시"]          # 제천: 분류표 합 = 총투표수, 공식 결과와 불일치 → 제외 (논문·대시보드 기준 248곳)
     for c in (c1, d1, c2, d2): d[c] = d[c].astype(float)
     orr = (d[c2] / d[d2]) / (d[c1] / d[d1])                         # 시트의 K 정의 = R2/R1, R = 보수/민주 (비의 비 = OR)
     ks = (d[c2] / (d[c2] + d[d2])) / (d[c1] / (d[c1] + d[d1]))      # 비율의 비 K = R_2/R_1
