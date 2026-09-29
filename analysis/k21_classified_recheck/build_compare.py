@@ -8,7 +8,7 @@ O3 = pd.read_pickle("overlay4_out.pkl"); D, P, N = O3["D"], O3["P"], O3["N"]
 S19 = pd.read_pickle("pe19_out.pkl"); x19 = S19["x"]
 G19 = pd.read_pickle("nec19.pkl"); M19 = pd.read_pickle("nec19_merge.pkl")
 N18 = pd.read_pickle("nec18.pkl"); NM = pd.read_pickle("nec18_merge.pkl"); NMf = NM.astype({c: float for c in ["P1", "M1", "P2", "M2"]})
-KN = pd.read_pickle("knorm.pkl")
+KN = pd.read_pickle("knorm.pkl"); KN4 = pd.read_pickle("knorm4.pkl")
 KC = pd.read_pickle("kcheck.pkl"); SF = pd.read_pickle("pe18_shortfall.pkl")
 S18 = pd.read_pickle("pe18_out.pkl"); x18 = S18["x"]; X18p = x18[["index", "박근혜", "문재인"]]
 
@@ -102,16 +102,25 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
              invalid=dict(total=int(G19.T무효.sum()), recheck_total=int(G19.U계.sum())),
              note="같은 보수 후보라도 유승민은 K < 1이다. 홍준표와 군소 후보가 미분류표에서 크게 늘어, 치우침은 이념보다 지지층의 표기 방식과 더 잘 맞는다. 구·시·군 집계 자료라 개인 행동은 확인할 수 없다."),
          normality=dict(
-             source="18대 뉴스타파 251곳(박/문), 19대 선관위 개표단위 합계 250곳(각 후보/문재인)",
+             source="18대 뉴스타파 251곳(박/문), 19대 선관위 개표단위 합계 250곳(각 후보/문재인), 20대 보정 248곳(윤/이), 21대 판독 252곳(김/이)",
              tests=[dict(K=k, n=int(t.n), mean=R(t.평균), median=R(t.중앙값), sd=R(t.SD), skew=R(t.왜도, 3), kurt=R(t.첨도, 3), sw_p=float(f"{t.SW_p:.3g}"),
-                         dag_p=float(f"{t.DAgostino_p:.3g}"), ad=R(t.AD_stat, 3), ad_5=R(t.AD_5pct, 3), normal=bool(t.SW_p >= .05 and t.AD_stat < t.AD_5pct))
-                    for k, t in KN["T"].iterrows()],
-             heterogeneity=[dict(K=k, n=int(h.n), z_sd=R(h.z_SD, 2), Q=R(h.Q, 1), df=int(h.df), I2=R(h.I2, 3), tau=R(h.tau, 3)) for k, h in KN["H"].iterrows()],
+                         dag_p=float(f"{t.DAgostino_p:.3g}"), ad=R(t.AD_stat, 3), ad_5=R(t.AD_5pct, 3), normal=bool(t.SW_p >= .05 and t.AD_stat < t.AD_5pct),
+                         verdict=("정규" if (t.SW_p >= .05 and t.AD_stat < t.AD_5pct) else ("경계" if (t.SW_p >= .05 and t.DAgostino_p >= .05) else "기각")))
+                    for k, t in pd.concat([KN["T"], KN4["T"][KN4["T"].index.str.contains("20대|21대")]]).iterrows()],
+             heterogeneity=[dict(K=k, n=int(h.n), z_sd=R(h.z_SD, 2), Q=R(h.Q, 1), df=int(h.df), I2=R(h.I2, 3), tau=R(h.tau, 3), r_R1=R(h.r_logK_R1, 2), k_below1=int(h["K<1"]))
+                            for k, h in KN4["H"].iterrows()],
              conclusions=["18대 K는 5% 수준에서 정규성이 기각되지만 log K는 모든 검정에서 기각되지 않는다. 18대 K는 로그정규분포에 맞는다.",
                           "19대 홍/문 K는 종 모양(평균 1.600, 중앙값 1.620)이지만 정규·로그정규 모두 5% 수준에서 기각된다.",
-                          "구·시·군 K의 흩어짐 가운데 87–93%(I²)는 표본오차가 아니라 실제 지역 차이다. log K와 분류표 보수 비율(R1)의 상관은 18대 0.46, 19대 0.44다.",
-                          "K 분포는 서로 다른 값이 섞인 혼합분포라, 정규분포 여부만으로 이상 여부를 판단하기 어렵다."]),
+                          "20대 K는 첨도 2.89로 양 끝에 튀는 값이 있다(영덕 2.48, 울릉 1.92, 오산 1.79 / 장흥 0.80). 정규성이 기각된다.",
+                          "21대 K는 네 선거 중 정규분포에 가장 가깝다(Shapiro-Wilk p 0.053, D'Agostino p 0.18). Anderson-Darling만 기각한다.",
+                          "네 선거 모두 구·시·군 K 흩어짐의 87–96%(I²)는 표본오차가 아니라 실제 지역 차이다. log K와 분류표 보수 비율(R1)의 상관은 18·19대 약 0.44, 20·21대 약 0.7이다.",
+                          "K 분포는 서로 다른 값이 섞인 혼합분포라, 정규분포 여부만으로 이상 여부를 판단하기 어렵다."],
+             why=["검정 방법 고르기: t 검정·신뢰구간·회귀 p값은 값들이 대략 정규분포라는 가정 위에 있다. K 평균이 1.28–1.60이고 1보다 작은 곳이 극소수라, 정규성이 조금 어긋나도 'K > 1' 결론은 그대로다.",
+                  "튀는 값 찾기: 정규분포라면 평균에서 3 표준편차 밖은 1,000곳 중 3곳 정도다. 분포 모양을 알아야 영덕 2.48 같은 값을 우연으로 볼지 판단할 수 있다(18대는 log K 기준).",
+                  "원인이 하나인지 여럿인지 보기: 모든 지역에 같은 원인이 같은 크기로 작용했다면 K는 한 값 주변에 표본오차만큼만 흩어진다. 실제 흩어짐은 표본오차의 3–5배이고 R1과 함께 움직여, 지역마다 다른 요인이 섞인 결과다.",
+                  "주의: 정규분포라는 사실이 부정의 증거도, 정규분포가 아니라는 사실이 정상의 증거도 아니다. 원인을 가르는 근거는 K와 다른 변수(R1·연령·후보 성향)의 관계다."]),
          figures=[dict(file="/analysis/k18_k19_normality.png", title="18·19대 K 분포와 정규 QQ (K, log K)"),
+                  dict(file="/analysis/k20_k21_normality.png", title="20·21대 K 분포와 정규 QQ (K, log K)"),
                   dict(file="/analysis/k18_k21_fitplot_sas.png", title="18–21대 Fit Plot 겹침 (SAS 스타일, Fit Statistics·20대 대비 검정)"),
                   dict(file="/analysis/k18_k21_overlay.png", title="18·19·20·21대 Fit Plot 겹침과 시도별 OR"),
                   dict(file="/analysis/k18_fitplot.png", title="18대 Fit Plot (박근혜 분자)"),

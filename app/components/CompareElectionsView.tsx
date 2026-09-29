@@ -27,9 +27,9 @@ export type ComparisonData = {
     newstapa?: { source: string; public_equals_total: number; categories: { label: string; n: number; note: string }[]; K: { label: string; n: number; K_mean: number; K_pooled: number }[]; hand_top: { unit: string; share: number }[]; note: string } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
   figures: { file: string; title: string }[];
   normality?: {
-    source: string; conclusions: string[];
-    tests: { K: string; n: number; mean: number; median: number; sd: number; skew: number; kurt: number; sw_p: number; dag_p: number; ad: number; ad_5: number; normal: boolean }[];
-    heterogeneity: { K: string; n: number; z_sd: number; Q: number; df: number; I2: number; tau: number }[];
+    source: string; conclusions: string[]; why?: string[];
+    tests: { K: string; n: number; mean: number; median: number; sd: number; skew: number; kurt: number; sw_p: number; dag_p: number; ad: number; ad_5: number; normal: boolean; verdict?: string }[];
+    heterogeneity: { K: string; n: number; z_sd: number; Q: number; df: number; I2: number; tau: number; r_R1?: number; k_below1?: number }[];
   };
   candidates19?: {
     source: string; reference: string; reference_share: { classified: number; recheck: number }; note: string;
@@ -169,9 +169,11 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
                       <td className="px-2 py-1.5 text-right">{r.skew.toFixed(2)}</td><td className="px-2 py-1.5 text-right">{r.kurt.toFixed(2)}</td>
                       <td className="px-2 py-1.5 text-right">{fp(r.sw_p)}</td><td className="px-2 py-1.5 text-right">{fp(r.dag_p)}</td>
                       <td className="px-2 py-1.5 text-right">{r.ad.toFixed(2)} ({r.ad_5.toFixed(2)})</td>
-                      <td className="px-2 py-1.5 text-center">{r.normal
+                      <td className="px-2 py-1.5 text-center">{(r.verdict ?? (r.normal ? '정규' : '기각')) === '정규'
                         ? <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">✓ 정규</span>
-                        : <span className="rounded bg-slate-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-slate-300">✕ 기각</span>}</td>
+                        : (r.verdict === '경계'
+                          ? <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">△ 경계</span>
+                          : <span className="rounded bg-slate-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-slate-300">✕ 기각</span>)}</td>
                     </tr>))}</tbody>
                 </table>
               </div>
@@ -181,19 +183,28 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
                 <thead><tr className="border-b border-white/10 text-slate-400">
                   <th className="px-2 py-1.5 text-left">K</th><th className="px-2 py-1.5 text-right">n</th><th className="px-2 py-1.5 text-right">표준화 값 SD (기대 1)</th>
                   <th className="px-2 py-1.5 text-right">Q (자유도)</th><th className="px-2 py-1.5 text-right">I²</th><th className="px-2 py-1.5 text-right">구·시·군 간 SD (log K)</th>
+                  <th className="px-2 py-1.5 text-right">log K–R1 상관</th><th className="px-2 py-1.5 text-right">K &lt; 1인 곳</th>
                 </tr></thead>
                 <tbody>{nm.heterogeneity.map((h) => (
                   <tr key={h.K} className="border-b border-white/5 text-slate-200">
                     <td className="px-2 py-1.5 font-semibold">{h.K}</td><td className="px-2 py-1.5 text-right">{h.n}</td>
                     <td className="px-2 py-1.5 text-right font-bold text-white">{h.z_sd.toFixed(2)}</td><td className="px-2 py-1.5 text-right">{h.Q.toLocaleString()} ({h.df})</td>
                     <td className="px-2 py-1.5 text-right">{(h.I2 * 100).toFixed(0)}%</td><td className="px-2 py-1.5 text-right">{h.tau.toFixed(3)}</td>
+                    <td className="px-2 py-1.5 text-right">{h.r_R1 != null ? h.r_R1.toFixed(2) : '—'}</td><td className="px-2 py-1.5 text-right">{h.k_below1 ?? '—'}</td>
                   </tr>))}</tbody>
               </table>
               <ul className="mt-3 list-disc space-y-0.5 pl-4 text-xs text-slate-400">{nm.conclusions.map((c) => <li key={c}>{c}</li>)}</ul>
             </Card>
+            {nm.why && (
+              <Card title="정규성을 왜 검토하나">
+                <ol className="list-decimal space-y-1.5 pl-5 text-sm text-slate-300">{nm.why.map((w) => <li key={w}>{w}</li>)}</ol>
+              </Card>
+            )}
             <Card title="K 분포와 정규 QQ">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/analysis/k18_k19_normality.png" alt="18·19대 K 분포와 정규 QQ" className="w-full rounded-lg bg-white" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/analysis/k20_k21_normality.png" alt="20·21대 K 분포와 정규 QQ" className="mt-4 w-full rounded-lg bg-white" />
             </Card>
           </div>
         );
