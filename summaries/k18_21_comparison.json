@@ -6957,6 +6957,10 @@
  },
  "figures": [
   {
+   "file": "/analysis/k18_k21_fitplot_sas.png",
+   "title": "18–21대 Fit Plot 겹침 (SAS 스타일, Fit Statistics·20대 대비 검정)"
+  },
+  {
    "file": "/analysis/k18_k21_overlay.png",
    "title": "18·19·20·21대 Fit Plot 겹침과 시도별 OR"
   },

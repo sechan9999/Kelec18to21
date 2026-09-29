@@ -70,7 +70,8 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
                        sensitivity_excluding=dict(n=int(O3["m18s"][2]), intercept=R(O3["m18s"][0]["Intercept"]), slope=R(O3["m18s"][0]["R_1"]), r2=R(O3["m18s"][1])),
                        sas_reported=dict(n=249, r2=0.9823, mse=0.001)),
              pe20=dict(fixes=["오산: 분류 = 최종 − 재확인으로 복원", "제천: 제외(복원 불가)"])),
-         figures=[dict(file="/analysis/k18_k21_overlay.png", title="18·19·20·21대 Fit Plot 겹침과 시도별 OR"),
+         figures=[dict(file="/analysis/k18_k21_fitplot_sas.png", title="18–21대 Fit Plot 겹침 (SAS 스타일, Fit Statistics·20대 대비 검정)"),
+                  dict(file="/analysis/k18_k21_overlay.png", title="18·19·20·21대 Fit Plot 겹침과 시도별 OR"),
                   dict(file="/analysis/k18_fitplot.png", title="18대 Fit Plot (박근혜 분자)"),
                   dict(file="/analysis/k18_fit_diagnostics.png", title="18대 Fit Diagnostics"),
                   dict(file="/analysis/k19_fitplot.png", title="19대 Fit Plot (홍준표 분자)"),
@@ -84,8 +85,8 @@ p19 = S19["p"].copy(); p19["공개대조_차이비"] = x19.rel.values; p19["공�
 p19.to_csv(OUT / "corrected_data/pe19res_corrected.csv", index=False, encoding="utf-8")
 p18 = S18["p"].copy(); p18["공개대조_차이비"] = x18.rel.values; p18["공개대조_10%이상"] = x18.rel.values >= .1
 p18.to_csv(OUT / "corrected_data/pe18res_corrected.csv", index=False, encoding="utf-8")
-for a, b in {"K18_K21_겹침.png": "k18_k21_overlay", "K18_FitPlot.png": "k18_fitplot", "K18_FitDiagnostics.png": "k18_fit_diagnostics", "K19_K20_K21_겹침.png": "k19_k20_k21_overlay", "K19_FitPlot.png": "k19_fitplot", "K19_FitDiagnostics.png": "k19_fit_diagnostics"}.items():
+for a, b in {"K18_K21_FitPlot_SAS.png": "k18_k21_fitplot_sas", "K18_K21_겹침.png": "k18_k21_overlay", "K18_FitPlot.png": "k18_fitplot", "K18_FitDiagnostics.png": "k18_fit_diagnostics", "K19_K20_K21_겹침.png": "k19_k20_k21_overlay", "K19_FitPlot.png": "k19_fitplot", "K19_FitDiagnostics.png": "k19_fit_diagnostics"}.items():
     shutil.copy(a, OUT / "public/analysis" / f"{b}.png")
-for f in ["pe18.py", "pe19.py", "overlay3.py", "overlay4.py", "build_compare.py", "wbcheck.py", "fixwb.py"]: shutil.copy(f, OUT / "analysis/k21_classified_recheck" / f)
+for f in ["pe18.py", "pe19.py", "overlay3.py", "overlay4.py", "build_compare.py", "wbcheck.py", "fixwb.py", "sas_overlay.py", "add_data21.py"]: shutil.copy(f, OUT / "analysis/k21_classified_recheck" / f)
 print(json.dumps([dict(id=e["id"], **{k: e.get(k) for k in ["national"]}, fit=e["fit"]) for e in elections], ensure_ascii=False)[:1800])
 print(tests); print(J["province_log_or_corr"]); print(len(provs), "provinces", (OUT / "summaries/k18_21_comparison.json").stat().st_size // 1024, "KB")
