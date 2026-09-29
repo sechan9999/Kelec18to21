@@ -8,6 +8,7 @@ O3 = pd.read_pickle("overlay4_out.pkl"); D, P, N = O3["D"], O3["P"], O3["N"]
 S19 = pd.read_pickle("pe19_out.pkl"); x19 = S19["x"]
 G19 = pd.read_pickle("nec19.pkl"); M19 = pd.read_pickle("nec19_merge.pkl")
 N18 = pd.read_pickle("nec18.pkl"); NM = pd.read_pickle("nec18_merge.pkl"); NMf = NM.astype({c: float for c in ["P1", "M1", "P2", "M2"]})
+EX = pd.read_pickle("explain.pkl"); CK = pd.read_pickle("candk.pkl"); CK21 = pd.read_pickle("candk21_type.pkl"); CA = pd.read_pickle("candage.pkl")
 KN = pd.read_pickle("knorm.pkl"); KN4 = pd.read_pickle("knorm4.pkl")
 KC = pd.read_pickle("kcheck.pkl"); SF = pd.read_pickle("pe18_shortfall.pkl")
 S18 = pd.read_pickle("pe18_out.pkl"); x18 = S18["x"]; X18p = x18[["index", "박근혜", "문재인"]]
@@ -101,6 +102,24 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
                    for c, nm, cp in [("홍", "홍준표", "보수"), ("안", "안철수", "중도"), ("유", "유승민", "보수"), ("심", "심상정", "진보"), ("기타", "기타 후보", "군소")]],
              invalid=dict(total=int(G19.T무효.sum()), recheck_total=int(G19.U계.sum())),
              note="같은 보수 후보라도 유승민은 K < 1이다. 홍준표와 군소 후보가 미분류표에서 크게 늘어, 치우침은 이념보다 지지층의 표기 방식과 더 잘 맞는다. 구·시·군 집계 자료라 개인 행동은 확인할 수 없다."),
+         candidates_all=dict(
+             source="18대 뉴스타파 251곳, 19대 선관위 250곳(봉화 개표단위 합계), 21대 개표상황표 판독 252곳. 20대는 후보별 자료 없음",
+             rows=[dict(election=t.선거, candidate=t.후보, camp={"박근혜": "보수", "홍준표": "보수", "김문수": "보수", "유승민": "보수", "이준석": "보수", "안철수": "중도", "심상정": "진보", "권영국": "진보", "기타": "군소", "송진호": "군소"}[t.후보],
+                        reference=t.기준, share_classified=R(t.분류득표율), share_recheck=R(t.미분류득표율), K_pooled=R(t.K_전국), K_mean=R(t.K_구시군평균), n_above1=int(t.K_1초과), n=int(t.n)) for _, t in CK.iterrows()],
+             type21=[dict(type=t.유형, **{c: R(t[c], 3) for c in ["김문수", "이준석", "권영국", "송진호"]}) for _, t in CK21.iterrows()],
+             age=[dict(election=t.선거, candidate={"박": "박근혜", "홍": "홍준표", "안": "안철수", "유": "유승민", "심": "심상정"}.get(t.후보, t.후보), n=int(t.n), r=R(t.상관, 2),
+                       slope10=R(t.기울기_10pt, 3), t=R(t.t, 1), slope10_R1=R(t.기울기_R1통제_10pt, 3), t_R1=R(t.t_R1통제, 1)) for _, t in CA.iterrows()],
+             mechanism=dict(figure="/analysis/k_age_mechanism.png", r_candidates=R(float(np.corrcoef(EX["R"].고령상관, EX["R"].logK)[0, 1]), 2),
+                            r_main=R(float(np.corrcoef(EX["R"][~EX["R"].후보.isin(["기타", "송진호"])].고령상관, EX["R"][~EX["R"].후보.isin(["기타", "송진호"])].logK)[0, 1]), 2),
+                            urate=[dict(election=e, r=R(float(np.corrcoef(d.age, d.urate)[0, 1]), 2), per10=R(float(np.polyfit(d.age, d.urate, 1)[0] * 10), 2)) for e, d in EX["dist"].items()],
+                            points=[dict(election=r.선거, candidate=r.후보, age_r=R(r.고령상관, 3), K=R(r.K, 3)) for _, r in EX["R"].iterrows()]),
+             conclusions=["후보 지지가 고령 지역에서 강할수록 그 후보의 K가 크다. 후보 11명(18·19·21대)의 상관 0.92, 군소 후보를 빼도 0.91.",
+                          "고령 지역일수록 미분류율이 높다. 60대 이상 비율 10%p 당 미분류율 +0.6~+1.8%p (상관 0.63–0.80, 네 선거 모두).",
+                          "고령층 지지가 두터운 보수 후보는 K > 1 (박근혜 1.39, 홍준표 1.61, 김문수 1.23).",
+                          "젊은 층 지지가 두터운 보수 후보는 K ≤ 1 (유승민 0.92, 이준석 0.97). 진보 후보도 K < 1 (심상정 0.74, 권영국 0.93).",
+                          "군소 후보는 세 선거 모두 K가 가장 크다 (18대 기타 4.72, 19대 기타 2.56, 21대 송진호 3.34). 60대 이상 비율이 높은 곳일수록 더 커진다 (t 6–9).",
+                          "주 후보 K는 고령 지역에서 커지지 않고, 19대는 오히려 작아진다. 고령 지역은 두 지지층의 연령 차이가 작기 때문일 수 있다(구·시·군 자료로는 구분 불가).",
+                          "치우침은 '보수 후보에게 몰아주기'보다 지지층의 표기 습관과 분류기 판독 특성으로 설명된다."]),
          normality=dict(
              source="18대 뉴스타파 251곳(박/문), 19대 선관위 개표단위 합계 250곳(각 후보/문재인), 20대 보정 248곳(윤/이), 21대 판독 252곳(김/이)",
              tests=[dict(K=k, n=int(t.n), mean=R(t.평균), median=R(t.중앙값), sd=R(t.SD), skew=R(t.왜도, 3), kurt=R(t.첨도, 3), sw_p=float(f"{t.SW_p:.3g}"),
@@ -119,7 +138,8 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
                   "튀는 값 찾기: 정규분포라면 평균에서 3 표준편차 밖은 1,000곳 중 3곳 정도다. 분포 모양을 알아야 영덕 2.48 같은 값을 우연으로 볼지 판단할 수 있다(18대는 log K 기준).",
                   "원인이 하나인지 여럿인지 보기: 모든 지역에 같은 원인이 같은 크기로 작용했다면 K는 한 값 주변에 표본오차만큼만 흩어진다. 실제 흩어짐은 표본오차의 3–5배이고 R1과 함께 움직여, 지역마다 다른 요인이 섞인 결과다.",
                   "주의: 정규분포라는 사실이 부정의 증거도, 정규분포가 아니라는 사실이 정상의 증거도 아니다. 원인을 가르는 근거는 K와 다른 변수(R1·연령·후보 성향)의 관계다."]),
-         figures=[dict(file="/analysis/k18_k19_normality.png", title="18·19대 K 분포와 정규 QQ (K, log K)"),
+         figures=[dict(file="/analysis/k_age_mechanism.png", title="K를 설명하는 두 사실: 후보 지지의 고령 상관과 K, 60대 이상 비율과 미분류율"),
+                  dict(file="/analysis/k18_k19_normality.png", title="18·19대 K 분포와 정규 QQ (K, log K)"),
                   dict(file="/analysis/k20_k21_normality.png", title="20·21대 K 분포와 정규 QQ (K, log K)"),
                   dict(file="/analysis/k18_k21_fitplot_sas.png", title="18–21대 Fit Plot 겹침 (SAS 스타일, Fit Statistics·20대 대비 검정)"),
                   dict(file="/analysis/k18_k21_overlay.png", title="18·19·20·21대 Fit Plot 겹침과 시도별 OR"),
