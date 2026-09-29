@@ -6,8 +6,8 @@
   "definitions": {
    "R1": "보수/(보수+민주), 분류된 투표지",
    "R2": "보수/(보수+민주), 미분류(재확인) 투표지",
-   "K": "R2/R1",
-   "OR": "(미분류 보수/민주) ÷ (분류 보수/민주)"
+   "K": "(미분류 보수/민주) ÷ (분류 보수/민주), 구·시·군마다 구해 평균 (엑셀 시트 K 열)",
+   "비율의비": "R2/R1"
   },
   "why_conservative": "당선인을 분자로 두면 19·21대만 방향이 뒤집힌다. 보수 후보로 통일하면 네 선거 모두 K > 1이다. 기울기는 19·20·21대 약 1.11, 18대 1.06.",
   "units": "구·시·군 (세종은 충남 '세종시')"
@@ -45,6 +45,15 @@
     "K": 1.1537,
     "R1": 0.5167,
     "R2": 0.5961
+   },
+   "k_defs": {
+    "K_sheet_mean": 1.4787,
+    "K_sheet_median": 1.4674,
+    "OR_pooled": 1.3806,
+    "Kshare_mean": 1.1663,
+    "Kshare_pooled": 1.1537,
+    "n_sheet": 249,
+    "sheet": "data18"
    },
    "outliers": [
     {
@@ -1626,6 +1635,15 @@
     "R1": 0.3655,
     "R2": 0.4806
    },
+   "k_defs": {
+    "K_sheet_mean": 1.5997,
+    "K_sheet_median": 1.6189,
+    "OR_pooled": 1.6063,
+    "Kshare_mean": 1.2781,
+    "Kshare_pooled": 1.3149,
+    "n_sheet": 249,
+    "sheet": "data19"
+   },
    "outliers": [
     {
      "province": "강원특별자치도",
@@ -3206,6 +3224,15 @@
     "R1": 0.5013,
     "R2": 0.5463
    },
+   "k_defs": {
+    "K_sheet_mean": 1.2854,
+    "K_sheet_median": 1.2791,
+    "OR_pooled": 1.1987,
+    "Kshare_mean": 1.0917,
+    "Kshare_pooled": 1.0901,
+    "n_sheet": 249,
+    "sheet": "data20"
+   },
    "outliers": [
     {
      "province": "경기도",
@@ -4779,6 +4806,15 @@
     "K": 1.1134,
     "R1": 0.4563,
     "R2": 0.508
+   },
+   "k_defs": {
+    "K_sheet_mean": 1.3154,
+    "K_sheet_median": 1.3352,
+    "OR_pooled": 1.2304,
+    "Kshare_mean": 1.115,
+    "Kshare_pooled": 1.1134,
+    "n_sheet": 248,
+    "sheet": "data21"
    },
    "outliers": [
     {
@@ -6935,7 +6971,45 @@
     "울릉군",
     "임실군"
    ],
-   "note": "대부분 공개값보다 3–5% 적음(부재자투표 등 일부 제외로 보임). 부천시 vote_all 500,000 과 연령 비율은 임의값",
+   "note": "공개값보다 적은 부분은 대부분 국내부재자·재외 투표. 부천시 vote_all 500,000 과 연령 비율은 임의값",
+   "shortfall": {
+    "only_special": 191,
+    "special_included": 49,
+    "precinct_missing": 9,
+    "precinct_missing_units": [
+     "경기도 연천군",
+     "경상남도 거창군",
+     "경상북도 경산시",
+     "부산광역시 연제구",
+     "인천광역시 동구",
+     "인천광역시 옹진군",
+     "전라남도 완도군",
+     "전북특별자치도 무주군",
+     "전북특별자치도 임실군"
+    ],
+    "K_by_group": {
+     "전체": {
+      "n": 249,
+      "K_mean": 1.4787,
+      "OR_pooled": 1.3806
+     },
+     "투표구 누락 9곳 제외": {
+      "n": 240,
+      "K_mean": 1.4774,
+      "OR_pooled": 1.3836
+     },
+     "특수투표만 빠진 곳": {
+      "n": 191,
+      "K_mean": 1.4934,
+      "OR_pooled": 1.4195
+     },
+     "특수투표 포함된 곳": {
+      "n": 49,
+      "K_mean": 1.4149,
+      "OR_pooled": 1.3108
+     }
+    }
+   },
    "sensitivity_excluding": {
     "n": 237,
     "intercept": 0.0435,

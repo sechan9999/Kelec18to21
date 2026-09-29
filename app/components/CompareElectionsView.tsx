@@ -12,6 +12,7 @@ type Election = {
   id: string; year: number; conservative: string; democratic: string; winner: string; winner_is_conservative: boolean;
   available: boolean; source: string; note?: string; fit: Fit;
   national?: { OR: number; lo: number; hi: number; K: number; R1: number; R2: number };
+  k_defs?: { K_sheet_mean: number; K_sheet_median: number; OR_pooled: number; Kshare_mean: number; Kshare_pooled: number; n_sheet: number; sheet: string };
   outliers?: { province: string; district: string; K: number; rstudent: number }[];
   points?: [number, number, string, string][];
 };
@@ -22,7 +23,8 @@ export type ComparisonData = {
   tests_vs_20: { election: string; slope_diff: number; slope_p: number; level_diff_at_half: number; level_p: number }[];
   provinces: ({ province: string } & Partial<Record<'18대' | '19대' | '20대' | '21대', ProvCell>>)[];
   province_log_or_corr: Record<string, number>;
-  data_quality: { pe18?: { name_fixes: string[]; within_2pct: number; pct_2_10: number; over_10pct: number; over_10pct_units: string[]; note: string; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
+  data_quality: { pe18?: { name_fixes: string[]; within_2pct: number; pct_2_10: number; over_10pct: number; over_10pct_units: string[]; note: string; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number };
+    shortfall?: { only_special: number; special_included: number; precinct_missing: number; precinct_missing_units: string[]; K_by_group: Record<string, { n: number; K_mean: number; OR_pooled: number }> } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
   figures: { file: string; title: string }[];
 };
 
@@ -70,7 +72,7 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
       <div className="rounded-3xl border border-teal-500/20 bg-teal-500/5 p-6">
         <h1 className="text-2xl font-bold text-white">{data.meta.title}</h1>
         <p className="mt-2 text-sm text-slate-400">
-          분자: {data.meta.numerator}. R1 = {data.meta.definitions.R1} · R2 = {data.meta.definitions.R2} · K = R2/R1 · OR = {data.meta.definitions.OR}. 단위: {data.meta.units}.
+          분자: {data.meta.numerator}. R1 = {data.meta.definitions.R1} · R2 = {data.meta.definitions.R2} · K = {data.meta.definitions.K} · 비율의 비 = R2/R1. 단위: {data.meta.units}.
         </p>
         <p className="mt-2 text-xs text-teal-200/80">{data.meta.why_conservative}</p>
       </div>
@@ -88,8 +90,9 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
             <div className="mt-1 text-xs text-slate-400">분자 {e.conservative} · 상대 {e.democratic}</div>
             {e.national ? (
               <>
-                <div className="mt-3 text-2xl font-bold text-white">OR {e.national.OR.toFixed(2)}</div>
-                <div className="text-xs text-slate-500">95% [{e.national.lo.toFixed(2)}, {e.national.hi.toFixed(2)}] · K {e.national.K.toFixed(3)}</div>
+                <div className="mt-3 text-2xl font-bold text-white">K {e.k_defs ? e.k_defs.K_sheet_mean.toFixed(3) : e.national.OR.toFixed(2)}</div>
+                <div className="text-[11px] text-slate-500">K = (재확인 보수/민주) ÷ (분류 보수/민주), 구·시·군 평균{e.k_defs ? ` (${e.k_defs.sheet}, n ${e.k_defs.n_sheet})` : ''}</div>
+                <div className="mt-1 text-xs text-slate-500">전국 합산 {e.national.OR.toFixed(3)} [{e.national.lo.toFixed(2)}, {e.national.hi.toFixed(2)}] · 비율의 비 {e.national.K.toFixed(3)}</div>
                 <div className="mt-2 text-xs text-slate-400">R2 = {e.fit.intercept!.toFixed(3)} + {e.fit.slope!.toFixed(3)}·R1 · R² {e.fit.r2.toFixed(4)} · n {e.fit.n}</div>
               </>
             ) : (
@@ -107,6 +110,33 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
       <div className="flex flex-wrap gap-2">
         <TabBtn id="overview" label="적합선 비교" /><TabBtn id="provinces" label="시도별 OR" /><TabBtn id="figures" label="그림" /><TabBtn id="report" label="비교 보고서" />
       </div>
+
+      <Card title="K 정의와 집계 방식" sub="같은 자료라도 정의(비의 비 / 비율의 비)와 집계(구·시·군 평균 / 전국 합산)에 따라 값이 달라집니다">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead><tr className="border-b border-white/10 text-slate-400">
+              <th className="px-2 py-1.5 text-left">선거</th>
+              <th className="px-2 py-1.5 text-right">K 구·시·군 평균</th><th className="px-2 py-1.5 text-right">K 중앙값</th><th className="px-2 py-1.5 text-right">K 전국 합산</th>
+              <th className="px-2 py-1.5 text-right">비율의 비 평균</th><th className="px-2 py-1.5 text-right">비율의 비 전국 합산</th>
+            </tr></thead>
+            <tbody>{avail.filter((e) => e.k_defs).map((e) => (
+              <tr key={e.id} className="border-b border-white/5 text-slate-300">
+                <td className="px-2 py-1.5 font-semibold" style={{ color: COLORS[e.id] }}>{e.id} ({e.k_defs!.sheet})</td>
+                <td className="px-2 py-1.5 text-right font-bold text-white">{e.k_defs!.K_sheet_mean.toFixed(3)}</td>
+                <td className="px-2 py-1.5 text-right">{e.k_defs!.K_sheet_median.toFixed(3)}</td>
+                <td className="px-2 py-1.5 text-right">{e.k_defs!.OR_pooled.toFixed(3)}</td>
+                <td className="px-2 py-1.5 text-right">{e.k_defs!.Kshare_mean.toFixed(3)}</td>
+                <td className="px-2 py-1.5 text-right">{e.k_defs!.Kshare_pooled.toFixed(3)}</td>
+              </tr>))}</tbody>
+          </table>
+        </div>
+        <ul className="mt-3 list-disc space-y-0.5 pl-4 text-xs text-slate-400">
+          <li>K (엑셀 data18 T열 등) = (재확인 보수/민주) ÷ (분류 보수/민주). OR 과 같은 식입니다. 구·시·군마다 구한 뒤 평균한 값이 굵은 글씨 (18대 1.479).</li>
+          <li>전국 합산은 표를 모두 더한 뒤 한 번 계산한 값으로, 재확인표가 적은 곳과 많은 곳을 표 수로 가중합니다.</li>
+          <li>비율의 비 = [보수/(보수+민주)]재확인 ÷ [보수/(보수+민주)]분류. 적합식의 R_1·R_2 와 같은 척도라서 1에 더 가깝게 나옵니다.</li>
+          <li>네 가지 모두 네 선거에서 1보다 큽니다. 방향은 정의와 무관합니다.</li>
+        </ul>
+      </Card>
 
       {tab === 'overview' && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -208,6 +238,10 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
                   {data.data_quality.pe18.name_fixes.map((f) => <li key={f}>{f}</li>)}
                   <li>공개 최종득표 대조: 2% 미만 {data.data_quality.pe18.within_2pct}곳, 2–10% {data.data_quality.pe18.pct_2_10}곳, 10% 이상 {data.data_quality.pe18.over_10pct}곳 ({data.data_quality.pe18.over_10pct_units.join('·')})</li>
                   <li>{data.data_quality.pe18.note}</li>
+                  {data.data_quality.pe18.shortfall && (<>
+                    <li>공개값보다 적은 부분: 국내부재자·재외 투표만 빠진 곳 {data.data_quality.pe18.shortfall.only_special}곳, 특수투표가 일부 또는 전부 들어간 곳 {data.data_quality.pe18.shortfall.special_included}곳, 투표구 일부가 빠진 곳 {data.data_quality.pe18.shortfall.precinct_missing}곳 ({data.data_quality.pe18.shortfall.precinct_missing_units.join('·')})</li>
+                    <li>K 구·시·군 평균: {Object.entries(data.data_quality.pe18.shortfall.K_by_group).map(([g, v]) => `${g} ${v.K_mean.toFixed(3)} (n ${v.n})`).join(' · ')}</li>
+                  </>)}
                   <li>10% 이상 {data.data_quality.pe18.over_10pct}곳 제외 시 {data.data_quality.pe18.sensitivity_excluding.intercept.toFixed(3)} + {data.data_quality.pe18.sensitivity_excluding.slope.toFixed(3)}·R1, R² {data.data_quality.pe18.sensitivity_excluding.r2.toFixed(3)}</li>
                 </ul>
               </div>
