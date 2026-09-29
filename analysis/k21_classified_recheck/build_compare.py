@@ -6,6 +6,7 @@ from scipy import stats
 OUT = Path("bundle"); R = lambda v, n=4: None if v is None or not np.isfinite(float(v)) else round(float(v), n)
 O3 = pd.read_pickle("overlay4_out.pkl"); D, P, N = O3["D"], O3["P"], O3["N"]
 S19 = pd.read_pickle("pe19_out.pkl"); x19 = S19["x"]
+G19 = pd.read_pickle("nec19.pkl"); M19 = pd.read_pickle("nec19_merge.pkl")
 KC = pd.read_pickle("kcheck.pkl"); SF = pd.read_pickle("pe18_shortfall.pkl")
 S18 = pd.read_pickle("pe18_out.pkl"); x18 = S18["x"]
 
@@ -79,6 +80,20 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
                        sensitivity_excluding=dict(n=int(O3["m18s"][2]), intercept=R(O3["m18s"][0]["Intercept"]), slope=R(O3["m18s"][0]["R_1"]), r2=R(O3["m18s"][1])),
                        sas_reported=dict(n=249, r2=0.9823, mse=0.001)),
              pe20=dict(fixes=["오산: 분류 = 최종 − 재확인으로 복원", "제천: 제외(복원 불가)"])),
+         candidates19=dict(
+             source="선관위 19대 분류기 통계 (구·시·군 250행, 6명 후보). data19 의 분류·미분류 득표와 249곳 모두 일치",
+             reference="문재인",
+             reference_share=dict(classified=R(G19["C문"].sum() / G19[[f"C{k}" for k in "문 홍 안 유 심 기타".split()]].sum().sum()),
+                                  recheck=R(G19["U문"].sum() / G19[[f"U{k}" for k in "문 홍 안 유 심 기타".split()]].sum().sum())),
+             rows=[dict(candidate=nm, camp=cp,
+                        share_classified=R(G19[f"C{c}"].sum() / G19[[f"C{k}" for k in "문 홍 안 유 심 기타".split()]].sum().sum()),
+                        share_recheck=R(G19[f"U{c}"].sum() / G19[[f"U{k}" for k in "문 홍 안 유 심 기타".split()]].sum().sum()),
+                        K_pooled=R((G19[f"U{c}"].sum() / G19["U문"].sum()) / (G19[f"C{c}"].sum() / G19["C문"].sum())),
+                        K_mean=R(((M19[f"U{c}"] / M19["U문"]) / (M19[f"C{c}"] / M19["C문"])).replace(np.inf, np.nan).mean()),
+                        n_above1=int((((M19[f"U{c}"] / M19["U문"]) / (M19[f"C{c}"] / M19["C문"])) > 1).sum()), n=int(len(M19)))
+                   for c, nm, cp in [("홍", "홍준표", "보수"), ("안", "안철수", "중도"), ("유", "유승민", "보수"), ("심", "심상정", "진보"), ("기타", "기타 후보", "군소")]],
+             invalid=dict(total=int(G19.T무효.sum()), recheck_total=int(G19.U계.sum())),
+             note="같은 보수 후보라도 유승민은 K < 1이다. 홍준표와 군소 후보가 미분류표에서 크게 늘어, 치우침은 이념보다 지지층의 표기 방식과 더 잘 맞는다. 구·시·군 집계 자료라 개인 행동은 확인할 수 없다."),
          figures=[dict(file="/analysis/k18_k21_fitplot_sas.png", title="18–21대 Fit Plot 겹침 (SAS 스타일, Fit Statistics·20대 대비 검정)"),
                   dict(file="/analysis/k18_k21_overlay.png", title="18·19·20·21대 Fit Plot 겹침과 시도별 OR"),
                   dict(file="/analysis/k18_fitplot.png", title="18대 Fit Plot (박근혜 분자)"),

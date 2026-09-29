@@ -7029,6 +7029,71 @@
    ]
   }
  },
+ "candidates19": {
+  "source": "선관위 19대 분류기 통계 (구·시·군 250행, 6명 후보). data19 의 분류·미분류 득표와 249곳 모두 일치",
+  "reference": "문재인",
+  "reference_share": {
+   "classified": 0.4128,
+   "recheck": 0.3501
+  },
+  "rows": [
+   {
+    "candidate": "홍준표",
+    "camp": "보수",
+    "share_classified": 0.2378,
+    "share_recheck": 0.3239,
+    "K_pooled": 1.6063,
+    "K_mean": 1.5997,
+    "n_above1": 247,
+    "n": 249
+   },
+   {
+    "candidate": "안철수",
+    "camp": "중도",
+    "share_classified": 0.2137,
+    "share_recheck": 0.2233,
+    "K_pooled": 1.2325,
+    "K_mean": 1.2352,
+    "n_above1": 235,
+    "n": 249
+   },
+   {
+    "candidate": "유승민",
+    "camp": "보수",
+    "share_classified": 0.0682,
+    "share_recheck": 0.053,
+    "K_pooled": 0.9156,
+    "K_mean": 0.9268,
+    "n_above1": 73,
+    "n": 249
+   },
+   {
+    "candidate": "심상정",
+    "camp": "진보",
+    "share_classified": 0.0626,
+    "share_recheck": 0.039,
+    "K_pooled": 0.7356,
+    "K_mean": 0.7094,
+    "n_above1": 5,
+    "n": 249
+   },
+   {
+    "candidate": "기타 후보",
+    "camp": "군소",
+    "share_classified": 0.0049,
+    "share_recheck": 0.0107,
+    "K_pooled": 2.5637,
+    "K_mean": 2.697,
+    "n_above1": 249,
+    "n": 249
+   }
+  ],
+  "invalid": {
+   "total": 130598,
+   "recheck_total": 1354723
+  },
+  "note": "같은 보수 후보라도 유승민은 K < 1이다. 홍준표와 군소 후보가 미분류표에서 크게 늘어, 치우침은 이념보다 지지층의 표기 방식과 더 잘 맞는다. 구·시·군 집계 자료라 개인 행동은 확인할 수 없다."
+ },
  "figures": [
   {
    "file": "/analysis/k18_k21_fitplot_sas.png",

@@ -26,6 +26,11 @@ export type ComparisonData = {
   data_quality: { pe18?: { name_fixes: string[]; within_2pct: number; pct_2_10: number; over_10pct: number; over_10pct_units: string[]; note: string; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number };
     shortfall?: { only_special: number; special_included: number; precinct_missing: number; precinct_missing_units: string[]; K_by_group: Record<string, { n: number; K_mean: number; OR_pooled: number }> } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
   figures: { file: string; title: string }[];
+  candidates19?: {
+    source: string; reference: string; reference_share: { classified: number; recheck: number }; note: string;
+    rows: { candidate: string; camp: string; share_classified: number; share_recheck: number; K_pooled: number; K_mean: number; n_above1: number; n: number }[];
+    invalid: { total: number; recheck_total: number };
+  };
 };
 
 const COLORS: Record<string, string> = { '18대': '#9b59b6', '19대': '#1baf7a', '20대': '#2a78d6', '21대': '#eb6834' };
@@ -53,7 +58,7 @@ function Card({ title, sub, children }: { title: string; sub?: string; children:
 }
 
 export default function CompareElectionsView({ data, report }: { data: ComparisonData; report?: string }) {
-  const [tab, setTab] = useState<'overview' | 'provinces' | 'figures' | 'report'>('overview');
+  const [tab, setTab] = useState<'overview' | 'provinces' | 'cand19' | 'figures' | 'report'>('overview');
   const avail = data.elections.filter((e) => e.available);
   const [shown, setShown] = useState<Record<string, boolean>>(Object.fromEntries(avail.map((e) => [e.id, true])));
 
@@ -108,7 +113,7 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <TabBtn id="overview" label="적합선 비교" /><TabBtn id="provinces" label="시도별 OR" /><TabBtn id="figures" label="그림" /><TabBtn id="report" label="비교 보고서" />
+        <TabBtn id="overview" label="적합선 비교" /><TabBtn id="provinces" label="시도별 OR" />{data.candidates19 && <TabBtn id="cand19" label="19대 후보별 K" />}<TabBtn id="figures" label="그림" /><TabBtn id="report" label="비교 보고서" />
       </div>
 
       <Card title="K 정의와 집계 방식" sub="같은 자료라도 정의(비의 비 / 비율의 비)와 집계(구·시·군 평균 / 전국 합산)에 따라 값이 달라집니다">
@@ -137,6 +142,55 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
           <li>네 가지 모두 네 선거에서 1보다 큽니다. 방향은 정의와 무관합니다.</li>
         </ul>
       </Card>
+
+      {tab === 'cand19' && data.candidates19 && (() => {
+        const c = data.candidates19;
+        const campColor: Record<string, string> = { 보수: '#e11d48', 중도: '#f59e0b', 진보: '#eab308', 군소: '#94a3b8' };
+        const pos = (k: number) => 50 + (Math.log(k) / Math.log(3)) * 50;
+        return (
+          <Card title="19대 후보별 K (문재인 대비)" sub={c.source}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-white/10 text-slate-400">
+                  <th className="px-2 py-1.5 text-left">후보</th><th className="px-2 py-1.5 text-right">분류표 득표율</th><th className="px-2 py-1.5 text-right">미분류 득표율</th>
+                  <th className="px-2 py-1.5 text-right">K 전국 합산</th><th className="px-2 py-1.5 text-right">K 구·시·군 평균</th><th className="px-2 py-1.5 text-right">K &gt; 1인 곳</th>
+                  <th className="w-[32%] px-2 py-1.5 text-center">K (로그 눈금, 가운데 = 1)</th>
+                </tr></thead>
+                <tbody>
+                  <tr className="border-b border-white/5 text-slate-500">
+                    <td className="px-2 py-1.5">{c.reference} <span className="text-[10px]">(기준)</span></td>
+                    <td className="px-2 py-1.5 text-right">{(c.reference_share.classified * 100).toFixed(1)}%</td>
+                    <td className="px-2 py-1.5 text-right">{(c.reference_share.recheck * 100).toFixed(1)}%</td>
+                    <td className="px-2 py-1.5 text-right">1</td><td className="px-2 py-1.5 text-right">1</td><td className="px-2 py-1.5 text-right">—</td><td />
+                  </tr>
+                  {c.rows.map((r) => (
+                    <tr key={r.candidate} className="border-b border-white/5 text-slate-300">
+                      <td className="px-2 py-1.5 font-semibold">{r.candidate} <span className="rounded px-1 text-[10px]" style={{ color: campColor[r.camp] }}>{r.camp}</span></td>
+                      <td className="px-2 py-1.5 text-right">{(r.share_classified * 100).toFixed(1)}%</td>
+                      <td className="px-2 py-1.5 text-right">{(r.share_recheck * 100).toFixed(1)}%</td>
+                      <td className={`px-2 py-1.5 text-right font-bold ${r.K_pooled > 1 ? 'text-rose-300' : 'text-sky-300'}`}>{r.K_pooled.toFixed(3)}</td>
+                      <td className="px-2 py-1.5 text-right">{r.K_mean.toFixed(3)}</td>
+                      <td className="px-2 py-1.5 text-right">{r.n_above1} / {r.n}</td>
+                      <td className="px-2 py-1.5">
+                        <div className="relative h-3 rounded bg-slate-800">
+                          <div className="absolute top-0 h-3 w-px bg-slate-400" style={{ left: '50%' }} />
+                          <div className={`absolute top-0.5 h-2 rounded ${r.K_pooled > 1 ? 'bg-rose-400/80' : 'bg-sky-400/80'}`}
+                            style={{ left: `${Math.min(50, pos(r.K_pooled))}%`, width: `${Math.abs(pos(r.K_pooled) - 50)}%` }} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <ul className="mt-3 list-disc space-y-0.5 pl-4 text-xs text-slate-400">
+              <li>K = (미분류 후보/문재인) ÷ (분류 후보/문재인). 1보다 크면 그 후보가 미분류표에서 상대적으로 많습니다.</li>
+              <li>{c.note}</li>
+              <li>무효표 {c.invalid.total.toLocaleString()}장은 모두 미분류로 들어갑니다 (미분류 {c.invalid.recheck_total.toLocaleString()}장의 {(c.invalid.total / c.invalid.recheck_total * 100).toFixed(1)}%).</li>
+            </ul>
+          </Card>
+        );
+      })()}
 
       {tab === 'overview' && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
