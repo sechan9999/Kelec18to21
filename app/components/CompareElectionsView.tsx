@@ -26,6 +26,11 @@ export type ComparisonData = {
   data_quality: { pe18?: { name_fixes: string[]; within_2pct: number; pct_2_10: number; over_10pct: number; over_10pct_units: string[]; note: string; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number };
     newstapa?: { source: string; public_equals_total: number; categories: { label: string; n: number; note: string }[]; K: { label: string; n: number; K_mean: number; K_pooled: number }[]; hand_top: { unit: string; share: number }[]; note: string } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
   figures: { file: string; title: string }[];
+  normality?: {
+    source: string; conclusions: string[];
+    tests: { K: string; n: number; mean: number; median: number; sd: number; skew: number; kurt: number; sw_p: number; dag_p: number; ad: number; ad_5: number; normal: boolean }[];
+    heterogeneity: { K: string; n: number; z_sd: number; Q: number; df: number; I2: number; tau: number }[];
+  };
   candidates19?: {
     source: string; reference: string; reference_share: { classified: number; recheck: number }; note: string;
     rows: { candidate: string; camp: string; share_classified: number; share_recheck: number; K_pooled: number; K_mean: number; n_above1: number; n: number }[];
@@ -58,7 +63,7 @@ function Card({ title, sub, children }: { title: string; sub?: string; children:
 }
 
 export default function CompareElectionsView({ data, report }: { data: ComparisonData; report?: string }) {
-  const [tab, setTab] = useState<'overview' | 'provinces' | 'cand19' | 'figures' | 'report'>('overview');
+  const [tab, setTab] = useState<'overview' | 'provinces' | 'cand19' | 'normality' | 'figures' | 'report'>('overview');
   const avail = data.elections.filter((e) => e.available);
   const [shown, setShown] = useState<Record<string, boolean>>(Object.fromEntries(avail.map((e) => [e.id, true])));
 
@@ -113,7 +118,7 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <TabBtn id="overview" label="적합선 비교" /><TabBtn id="provinces" label="시도별 OR" />{data.candidates19 && <TabBtn id="cand19" label="19대 후보별 K" />}<TabBtn id="figures" label="그림" /><TabBtn id="report" label="비교 보고서" />
+        <TabBtn id="overview" label="적합선 비교" /><TabBtn id="provinces" label="시도별 OR" />{data.candidates19 && <TabBtn id="cand19" label="19대 후보별 K" />}{data.normality && <TabBtn id="normality" label="K 정규성" />}<TabBtn id="figures" label="그림" /><TabBtn id="report" label="비교 보고서" />
       </div>
 
       <Card title="K 정의와 집계 방식" sub="같은 자료라도 정의(비의 비 / 비율의 비)와 집계(구·시·군 평균 / 전국 합산)에 따라 값이 달라집니다">
@@ -142,6 +147,57 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
           <li>네 가지 모두 네 선거에서 1보다 큽니다. 방향은 정의와 무관합니다.</li>
         </ul>
       </Card>
+
+      {tab === 'normality' && data.normality && (() => {
+        const nm = data.normality;
+        const fp = (p: number) => (p < 0.001 ? '< 0.001' : p.toFixed(3));
+        return (
+          <div className="space-y-6">
+            <Card title="구·시·군 K 정규성 검정" sub={nm.source}>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-white/10 text-slate-400">
+                    <th className="px-2 py-1.5 text-left">K</th><th className="px-2 py-1.5 text-right">n</th><th className="px-2 py-1.5 text-right">평균</th><th className="px-2 py-1.5 text-right">중앙값</th>
+                    <th className="px-2 py-1.5 text-right">SD</th><th className="px-2 py-1.5 text-right">왜도</th><th className="px-2 py-1.5 text-right">첨도</th>
+                    <th className="px-2 py-1.5 text-right">Shapiro-Wilk p</th><th className="px-2 py-1.5 text-right">D&apos;Agostino p</th><th className="px-2 py-1.5 text-right">Anderson-Darling (5% 기준)</th>
+                    <th className="px-2 py-1.5 text-center">판정 (5%)</th>
+                  </tr></thead>
+                  <tbody>{nm.tests.map((r) => (
+                    <tr key={r.K} className={`border-b border-white/5 ${r.K.startsWith('log') ? 'text-slate-400' : 'text-slate-200'}`}>
+                      <td className="px-2 py-1.5 font-semibold">{r.K}</td><td className="px-2 py-1.5 text-right">{r.n}</td>
+                      <td className="px-2 py-1.5 text-right">{r.mean.toFixed(3)}</td><td className="px-2 py-1.5 text-right">{r.median.toFixed(3)}</td><td className="px-2 py-1.5 text-right">{r.sd.toFixed(3)}</td>
+                      <td className="px-2 py-1.5 text-right">{r.skew.toFixed(2)}</td><td className="px-2 py-1.5 text-right">{r.kurt.toFixed(2)}</td>
+                      <td className="px-2 py-1.5 text-right">{fp(r.sw_p)}</td><td className="px-2 py-1.5 text-right">{fp(r.dag_p)}</td>
+                      <td className="px-2 py-1.5 text-right">{r.ad.toFixed(2)} ({r.ad_5.toFixed(2)})</td>
+                      <td className="px-2 py-1.5 text-center">{r.normal
+                        ? <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">✓ 정규</span>
+                        : <span className="rounded bg-slate-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-slate-300">✕ 기각</span>}</td>
+                    </tr>))}</tbody>
+                </table>
+              </div>
+            </Card>
+            <Card title="구·시·군 K가 모두 같은 값인가 (이질성)" sub="표준화 값 = (구·시·군 log K − 전국 가중평균) ÷ 표본오차. 참 K가 모두 같다면 SD 1">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-white/10 text-slate-400">
+                  <th className="px-2 py-1.5 text-left">K</th><th className="px-2 py-1.5 text-right">n</th><th className="px-2 py-1.5 text-right">표준화 값 SD (기대 1)</th>
+                  <th className="px-2 py-1.5 text-right">Q (자유도)</th><th className="px-2 py-1.5 text-right">I²</th><th className="px-2 py-1.5 text-right">구·시·군 간 SD (log K)</th>
+                </tr></thead>
+                <tbody>{nm.heterogeneity.map((h) => (
+                  <tr key={h.K} className="border-b border-white/5 text-slate-200">
+                    <td className="px-2 py-1.5 font-semibold">{h.K}</td><td className="px-2 py-1.5 text-right">{h.n}</td>
+                    <td className="px-2 py-1.5 text-right font-bold text-white">{h.z_sd.toFixed(2)}</td><td className="px-2 py-1.5 text-right">{h.Q.toLocaleString()} ({h.df})</td>
+                    <td className="px-2 py-1.5 text-right">{(h.I2 * 100).toFixed(0)}%</td><td className="px-2 py-1.5 text-right">{h.tau.toFixed(3)}</td>
+                  </tr>))}</tbody>
+              </table>
+              <ul className="mt-3 list-disc space-y-0.5 pl-4 text-xs text-slate-400">{nm.conclusions.map((c) => <li key={c}>{c}</li>)}</ul>
+            </Card>
+            <Card title="K 분포와 정규 QQ">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/analysis/k18_k19_normality.png" alt="18·19대 K 분포와 정규 QQ" className="w-full rounded-lg bg-white" />
+            </Card>
+          </div>
+        );
+      })()}
 
       {tab === 'cand19' && data.candidates19 && (() => {
         const c = data.candidates19;

@@ -1,7 +1,7 @@
 """k18to21_수정본.xlsx 에 nec19 탭 추가: 19대 선관위 분류기 통계 원자료(구·시·군 250행) + data19 대조 + 후보별 재확인/분류 비교"""
 import shutil, openpyxl, pandas as pd, numpy as np
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-F = "k18to21_수정본.xlsx"; shutil.copy(F, "k18to21_수정본_before_nec19.xlsx")
+F = "k18to21_수정본.xlsx"; shutil.copy(F, "k18to21_수정본_before_nec19b.xlsx")
 g = pd.read_pickle("nec19.pkl"); m = pd.read_pickle("nec19_merge.pkl"); x = pd.read_pickle("pe19_out.pkl")["x"]
 wb = openpyxl.load_workbook(F)
 if "nec19" in wb.sheetnames: del wb["nec19"]
@@ -29,7 +29,8 @@ ws.cell(r, 1, "249곳 모두 일치 (청주시흥덕구 = 흥덕 + 서원). data
 
 ws.cell(r, 1, "2. 공개 최종득표보다 적은 이유").font = B; r += 1
 ws.cell(r, 1, f"선관위 분류기 통과 투표지만 담았기 때문이다. 전국 문재인 공개 {int(x.문재인.sum()):,} vs 분류기 통과 {int(m.T문.sum()):,}, 홍준표 {int(x.홍준표.sum()):,} vs {int(m.T홍.sum()):,}."); r += 1
-ws.cell(r, 1, "공개값보다 2% 이상 적은 14곳 (분류기를 거치지 않고 센 투표지가 많은 곳):"); r += 1
+ws.cell(r, 1, f"봉화군은 선관위 구·시·군 소계 행에 개표단위 일부(분류기 통과 2,159표)가 빠져 있어, data19 와 아래 표는 개표단위 합계(22,808)로 고쳤다. 원자료(5번)는 그대로 두고 주황색으로 표시."); r += 1
+ws.cell(r, 1, f"공개값보다 2% 이상 적은 {int((x.rel >= .02).sum())}곳 (분류기를 거치지 않고 센 투표지가 많은 곳):"); r += 1
 hdr(r, ["구·시·군", "공개 문재인", "분류기 문재인", "공개 홍준표", "분류기 홍준표", "부족 비율"]); r += 1
 x2 = x.merge(m[["index", "T문", "T홍"]], on="index")
 for _, v in x2[x2.rel >= .02].sort_values("rel", ascending=False).iterrows():
@@ -60,10 +61,14 @@ for src in wsrc.iter_rows(min_row=4, values_only=True):
     if src[1] is None:
         for j in range(1, len(vals) + 1): ws.cell(r, j).font = B
     for j in range(3, 28): ws.cell(r, j).number_format = "#,##0"
+    if src[1] == "봉화군":
+        from openpyxl.comments import Comment
+        c = ws.cell(r, 2); c.fill = PatternFill("solid", fgColor="FFC000")
+        c.comment = Comment("[확인 필요] 선관위 원자료의 구·시·군 소계. 개표단위 일부(분류기 통과 2,159표)가 빠진 값이라 data19 는 개표단위 합계(22,808)로 고침", "점검", width=330, height=100)
     r += 1
 ws.column_dimensions["A"].width = 26; ws.column_dimensions["B"].width = 22
 for j in range(3, 29): ws.column_dimensions[openpyxl.utils.get_column_letter(j)].width = 13
 ws.freeze_panes = None
-lg = wb["점검_수정내역"]; n = lg.max_row + 1
+lg = wb["점검_수정내역"]; n = next((c.row for c in lg["A"] if isinstance(c.value, str) and c.value.startswith("nec19:")), lg.max_row + 1)
 lg.cell(n, 1, "nec19: 19대 선관위 분류기 통계(구·시·군 250행, 6명 후보) 원자료 추가. data19 의 분류·미분류 득표·무효·합계 9개 열이 249곳 모두 일치. 후보별 미분류/분류 비교(유승민 K 0.92, 홍준표 1.61, 기타 2.56).")
 wb.save(F); print("saved rows", r)

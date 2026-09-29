@@ -15,6 +15,9 @@ p.columns = [c.strip() for c in p.columns]
 # 이름 보정: 빈 이름(index 31) = 부천시(가나다순 위치·규모), 여주군 -> 여주시, 진구 -> 부산진구, 청원군 -> 청주시청원구
 p.loc[p.district.isna(), "district"] = "부천시"
 p["district"] = p.district.replace({"여주군": "여주시", "진구": "부산진구", "청원군": "청주시청원구"})
+# 봉화군: 선관위 구·시·군 소계 행에 개표단위 일부(분류기 통과 2,159표)가 빠짐 → 개표단위 합계로 교체 (K18_K19_results.xlsx, 공개 투표수 22,947 에 맞음)
+_b = pd.read_excel("k1819res.xlsx", "19대_구시군").set_index("구시군").loc["봉화군"]
+p.loc[p.district == "봉화군", ["vote_all", "U_all", "M1", "H1", "M2", "H2"]] = [_b.통과_계, _b.미분류계, _b.분류_문, _b.분류_홍, _b.미분류_문, _b.미분류_홍]
 code = pd.read_pickle("pe20.pkl").groupby("region").시도.first()
 p["시도"] = p.region.map(code)
 p["R_1"] = p.H1 / (p.H1 + p.M1); p["R_2"] = p.H2 / (p.H2 + p.M2); p["K"] = p.R_2 / p.R_1; p["R_1sq"] = p.R_1 ** 2
