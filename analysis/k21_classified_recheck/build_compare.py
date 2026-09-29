@@ -6,6 +6,7 @@ from scipy import stats
 OUT = Path("bundle"); R = lambda v, n=4: None if v is None or not np.isfinite(float(v)) else round(float(v), n)
 O3 = pd.read_pickle("overlay4_out.pkl"); D, P, N = O3["D"], O3["P"], O3["N"]
 S19 = pd.read_pickle("pe19_out.pkl"); x19 = S19["x"]
+KC = pd.read_pickle("kcheck.pkl"); SF = pd.read_pickle("pe18_shortfall.pkl")
 S18 = pd.read_pickle("pe18_out.pkl"); x18 = S18["x"]
 
 META = {"18대": dict(year=2012, conservative="박근혜", democratic="문재인", winner="박근혜", winner_is_conservative=True),
@@ -28,6 +29,9 @@ for e in ["18대", "19대", "20대", "21대"]:
                  resid_sd=R(r.std()), skew=R(stats.skew(r), 3), kurt=R(stats.kurtosis(r), 3), shapiro_p=R(stats.shapiro(r).pvalue)),
         national=dict(OR=R(N.loc[e, "OR"]), lo=R(N.loc[e, "lo"]), hi=R(N.loc[e, "hi"]), K=R(N.loc[e, "K"]),
                       R1=R(d.Y1.sum() / (d.Y1 + d.L1).sum()), R2=R(d.Y2.sum() / (d.Y2 + d.L2).sum())),
+        k_defs=dict(K_sheet_mean=R(KC.loc[e, "OR_구시군평균"]), K_sheet_median=R(KC.loc[e, "OR_중앙값"]), OR_pooled=R(KC.loc[e, "OR_전국합산"]),
+                    Kshare_mean=R(KC.loc[e, "Kshare_구시군평균"]), Kshare_pooled=R(KC.loc[e, "Kshare_전국합산"]), n_sheet=int(KC.loc[e, "n"]),
+                    sheet=dict(zip(["18대", "19대", "20대", "21대"], ["data18", "data19", "data20", "data21"]))[e]),
         outliers=[dict(province=r.시도, district=r.단위, R1=R(r.R_1), R2=R(r.R_2), K=R(r.R_2 / r.R_1), rstudent=R(r.rs, 2)) for _, r in out.iterrows()],
         points=[[R(a, 4), R(b, 4), s, u] for a, b, s, u in zip(d.R_1, d.R_2, d.시도, d.단위)]))
 
@@ -51,7 +55,7 @@ C = np.corrcoef(np.log(W.dropna().values.T))
 
 J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표지 비교", built="2026-09-28",
                    numerator="보수 후보 (18대 박근혜, 19대 홍준표, 20대 윤석열, 21대 김문수)",
-                   definitions=dict(R1="보수/(보수+민주), 분류된 투표지", R2="보수/(보수+민주), 미분류(재확인) 투표지", K="R2/R1", OR="(미분류 보수/민주) ÷ (분류 보수/민주)"),
+                   definitions=dict(R1="보수/(보수+민주), 분류된 투표지", R2="보수/(보수+민주), 미분류(재확인) 투표지", K="(미분류 보수/민주) ÷ (분류 보수/민주), 구·시·군마다 구해 평균 (엑셀 시트 K 열)", 비율의비="R2/R1"),
                    why_conservative="당선인을 분자로 두면 19·21대만 방향이 뒤집힌다. 보수 후보로 통일하면 네 선거 모두 K > 1이다. 기울기는 19·20·21대 약 1.11, 18대 1.06.",
                    units="구·시·군 (세종은 충남 '세종시')"),
          elections=elections, tests_vs_20=tests, provinces=provs,
@@ -66,7 +70,12 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
                                    "index 31 = 부천시 (2012년 원미·소사·오정 3개 구 합)", "진구 → 부산진구"],
                        within_2pct=int((x18.rel < .02).sum()), pct_2_10=int(((x18.rel >= .02) & (x18.rel < .1)).sum()), over_10pct=int((x18.rel >= .1).sum()),
                        over_10pct_units=sorted(x18[x18.rel >= .1].district.tolist()),
-                       note="대부분 공개값보다 3–5% 적음(부재자투표 등 일부 제외로 보임). 부천시 vote_all 500,000 과 연령 비율은 임의값",
+                       note="공개값보다 적은 부분은 대부분 국내부재자·재외 투표. 부천시 vote_all 500,000 과 연령 비율은 임의값",
+                       shortfall=dict(only_special=int((SF.grp.str.startswith("A")).sum()), special_included=int((SF.grp.str.startswith("C")).sum()),
+                                      precinct_missing=int((SF.grp.str.startswith("D")).sum()),
+                                      precinct_missing_units=[f"{r.시도} {r.district}" for _, r in SF[SF.grp.str.startswith("D")].iterrows()],
+                                      K_by_group={g: dict(n=len(d), K_mean=R(((d.P2 / d.M2) / (d.P1 / d.M1)).mean()), OR_pooled=R((d.P2.sum() / d.M2.sum()) / (d.P1.sum() / d.M1.sum())))
+                                                  for g, d in [("전체", SF), ("투표구 누락 9곳 제외", SF[~SF.grp.str.startswith("D")]), ("특수투표만 빠진 곳", SF[SF.grp.str.startswith("A")]), ("특수투표 포함된 곳", SF[SF.grp.str.startswith("C")])]}),
                        sensitivity_excluding=dict(n=int(O3["m18s"][2]), intercept=R(O3["m18s"][0]["Intercept"]), slope=R(O3["m18s"][0]["R_1"]), r2=R(O3["m18s"][1])),
                        sas_reported=dict(n=249, r2=0.9823, mse=0.001)),
              pe20=dict(fixes=["오산: 분류 = 최종 − 재확인으로 복원", "제천: 제외(복원 불가)"])),
