@@ -7,8 +7,9 @@ OUT = Path("bundle"); R = lambda v, n=4: None if v is None or not np.isfinite(fl
 O3 = pd.read_pickle("overlay4_out.pkl"); D, P, N = O3["D"], O3["P"], O3["N"]
 S19 = pd.read_pickle("pe19_out.pkl"); x19 = S19["x"]
 G19 = pd.read_pickle("nec19.pkl"); M19 = pd.read_pickle("nec19_merge.pkl")
+N18 = pd.read_pickle("nec18.pkl"); NM = pd.read_pickle("nec18_merge.pkl"); NMf = NM.astype({c: float for c in ["P1", "M1", "P2", "M2"]})
 KC = pd.read_pickle("kcheck.pkl"); SF = pd.read_pickle("pe18_shortfall.pkl")
-S18 = pd.read_pickle("pe18_out.pkl"); x18 = S18["x"]
+S18 = pd.read_pickle("pe18_out.pkl"); x18 = S18["x"]; X18p = x18[["index", "박근혜", "문재인"]]
 
 META = {"18대": dict(year=2012, conservative="박근혜", democratic="문재인", winner="박근혜", winner_is_conservative=True),
         "19대": dict(year=2017, conservative="홍준표", democratic="문재인", winner="문재인", winner_is_conservative=False),
@@ -71,12 +72,17 @@ J = dict(meta=dict(title="18–21대 대선 분류/미분류(재확인) 투표�
                                    "index 31 = 부천시 (2012년 원미·소사·오정 3개 구 합)", "진구 → 부산진구"],
                        within_2pct=int((x18.rel < .02).sum()), pct_2_10=int(((x18.rel >= .02) & (x18.rel < .1)).sum()), over_10pct=int((x18.rel >= .1).sum()),
                        over_10pct_units=sorted(x18[x18.rel >= .1].district.tolist()),
-                       note="공개값보다 적은 부분은 대부분 국내부재자·재외 투표. 부천시 vote_all 500,000 과 연령 비율은 임의값",
-                       shortfall=dict(only_special=int((SF.grp.str.startswith("A")).sum()), special_included=int((SF.grp.str.startswith("C")).sum()),
-                                      precinct_missing=int((SF.grp.str.startswith("D")).sum()),
-                                      precinct_missing_units=[f"{r.시도} {r.district}" for _, r in SF[SF.grp.str.startswith("D")].iterrows()],
-                                      K_by_group={g: dict(n=len(d), K_mean=R(((d.P2 / d.M2) / (d.P1 / d.M1)).mean()), OR_pooled=R((d.P2.sum() / d.M2.sum()) / (d.P1.sum() / d.M1.sum())))
-                                                  for g, d in [("전체", SF), ("투표구 누락 9곳 제외", SF[~SF.grp.str.startswith("D")]), ("특수투표만 빠진 곳", SF[SF.grp.str.startswith("A")]), ("특수투표 포함된 곳", SF[SF.grp.str.startswith("C")])]}),
+                       note="공개값보다 적은 부분은 수개표(부재자 등) 몫. 부천시 vote_all 500,000 과 연령 비율은 임의값",
+                       newstapa=dict(source="뉴스타파 공개 18대 분류기 운영결과 (선관위, 구·시·군 251행)",
+                                     public_equals_total=int(((NM.merge(X18p, on="index").박근혜 == NM.merge(X18p, on="index").계_박근혜)).sum()),
+                                     categories=[dict(label=l, n=int(NM.cat.str.startswith(c).sum()), note=t) for c, l, t in
+                                                 [("A", "완전 일치", "data18 = 분류기 개표분"), ("B", "분류↔미분류 소수 표 차이", "후보별 합은 같음, 최대 54표"),
+                                                  ("C", "수개표 포함", "data18 이 수개표(부재자 등) 득표를 분류·미분류에 더함, 포함 비율 중앙값 92%"), ("D", "기타 소수 차이", "최대 56표")]],
+                                     K=[dict(label=l, n=int(len(d)), K_mean=R(((d[p2] / d[m2]) / (d[p1] / d[m1])).mean()), K_pooled=R((d[p2].sum() / d[m2].sum()) / (d[p1].sum() / d[m1].sum())))
+                                        for l, d, p1, m1, p2, m2 in [("data18", NMf, "P1", "M1", "P2", "M2"), ("뉴스타파 (부천 합산 249)", NMf, "분류_박근혜", "분류_문재인", "미분류_박근혜", "미분류_문재인"),
+                                                                     ("뉴스타파 원자료 (251)", N18, "분류_박근혜", "분류_문재인", "미분류_박근혜", "미분류_문재인")]],
+                                     hand_top=[dict(unit=f"{r.시도} {r.district}", share=R(r.수개표_계 / r.계_총투표수, 3)) for _, r in NM.assign(h=NM.수개표_계 / NM.계_총투표수).sort_values("h", ascending=False).head(8).iterrows()],
+                                     note="앞서 '투표구 누락'으로 본 9곳은 누락이 아니라 수개표 비중이 큰 곳이다. 공개값보다 적은 몫은 모두 수개표다."),
                        sensitivity_excluding=dict(n=int(O3["m18s"][2]), intercept=R(O3["m18s"][0]["Intercept"]), slope=R(O3["m18s"][0]["R_1"]), r2=R(O3["m18s"][1])),
                        sas_reported=dict(n=249, r2=0.9823, mse=0.001)),
              pe20=dict(fixes=["오산: 분류 = 최종 − 재확인으로 복원", "제천: 제외(복원 불가)"])),

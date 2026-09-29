@@ -24,7 +24,7 @@ export type ComparisonData = {
   provinces: ({ province: string } & Partial<Record<'18대' | '19대' | '20대' | '21대', ProvCell>>)[];
   province_log_or_corr: Record<string, number>;
   data_quality: { pe18?: { name_fixes: string[]; within_2pct: number; pct_2_10: number; over_10pct: number; over_10pct_units: string[]; note: string; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number };
-    shortfall?: { only_special: number; special_included: number; precinct_missing: number; precinct_missing_units: string[]; K_by_group: Record<string, { n: number; K_mean: number; OR_pooled: number }> } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
+    newstapa?: { source: string; public_equals_total: number; categories: { label: string; n: number; note: string }[]; K: { label: string; n: number; K_mean: number; K_pooled: number }[]; hand_top: { unit: string; share: number }[]; note: string } }; pe19: { name_fixes: string[]; within_2pct: number; over_2pct: number; over_2pct_units: string[]; sensitivity_excluding: { n: number; intercept: number; slope: number; r2: number }; sas_reported: { n: number; r2: number; mse: number; note?: string } }; pe20: { fixes: string[] } };
   figures: { file: string; title: string }[];
   candidates19?: {
     source: string; reference: string; reference_share: { classified: number; recheck: number }; note: string;
@@ -292,10 +292,11 @@ export default function CompareElectionsView({ data, report }: { data: Compariso
                   {data.data_quality.pe18.name_fixes.map((f) => <li key={f}>{f}</li>)}
                   <li>공개 최종득표 대조: 2% 미만 {data.data_quality.pe18.within_2pct}곳, 2–10% {data.data_quality.pe18.pct_2_10}곳, 10% 이상 {data.data_quality.pe18.over_10pct}곳 ({data.data_quality.pe18.over_10pct_units.join('·')})</li>
                   <li>{data.data_quality.pe18.note}</li>
-                  {data.data_quality.pe18.shortfall && (<>
-                    <li>공개값보다 적은 부분: 국내부재자·재외 투표만 빠진 곳 {data.data_quality.pe18.shortfall.only_special}곳, 특수투표가 일부 또는 전부 들어간 곳 {data.data_quality.pe18.shortfall.special_included}곳, 투표구 일부가 빠진 곳 {data.data_quality.pe18.shortfall.precinct_missing}곳 ({data.data_quality.pe18.shortfall.precinct_missing_units.join('·')})</li>
-                    <li>K 구·시·군 평균: {Object.entries(data.data_quality.pe18.shortfall.K_by_group).map(([g, v]) => `${g} ${v.K_mean.toFixed(3)} (n ${v.n})`).join(' · ')}</li>
-                  </>)}
+                  {data.data_quality.pe18.newstapa && (() => { const n = data.data_quality.pe18.newstapa!; return (<>
+                    <li>{n.source}와 대조: {n.categories.map((c) => `${c.label} ${c.n}곳`).join(', ')}. 공개 최종득표 = 뉴스타파 총투표 ({n.public_equals_total}곳).</li>
+                    <li>{n.note} 수개표 비중: {n.hand_top.map((h) => `${h.unit.split(' ').pop()} ${(h.share * 100).toFixed(0)}%`).join(' · ')}</li>
+                    <li>K 구·시·군 평균 / 전국 합산: {n.K.map((k) => `${k.label} ${k.K_mean.toFixed(3)} / ${k.K_pooled.toFixed(3)}`).join(' · ')}</li>
+                  </>); })()}
                   <li>10% 이상 {data.data_quality.pe18.over_10pct}곳 제외 시 {data.data_quality.pe18.sensitivity_excluding.intercept.toFixed(3)} + {data.data_quality.pe18.sensitivity_excluding.slope.toFixed(3)}·R1, R² {data.data_quality.pe18.sensitivity_excluding.r2.toFixed(3)}</li>
                 </ul>
               </div>
